@@ -17,12 +17,13 @@ export class Server {
      * @param options 可选项|路由方法
      * @returns
      */
-    constructor(options?: Option | RouteFunc[]) {
+    constructor(options?: Option | string[]) {
         options = options || {};
 
-        // 启用快捷模式（非装饰器模式）
+        // Shortcut Mode
         if (Array.isArray(options)) {
             // todo shortcut mode
+            this.#run();
             return;
         }
 
@@ -67,6 +68,7 @@ export class Server {
                 throw new Exception("Route not found", HttpStatus.NOT_FOUND);
             }
         } catch (e) {
+            console.error(e);
             if (Global.errorHandler) {
                 e.status = e.status || HttpStatus.INTERNAL_SERVER_ERROR;
                 ctx.status = e.status || HttpStatus.INTERNAL_SERVER_ERROR;

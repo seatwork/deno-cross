@@ -52,27 +52,19 @@ export class Context {
         return getCookies(this.#request.headers);
     }
 
-    // 获取请求体
-    async body() {
-        if (this.#request.bodyUsed) {
+    // 获取请求体所有解析方法
+    get body() {
+        const req = this.#request;
+        if (req.bodyUsed) {
             throw new Exception("Body already consumed");
         }
-        const contentType = this.headers.get('content-type');
-        if (!contentType || contentType.includes("text/plain")) {
-            return await this.#request.text();
+        return {
+            text: () => req.text(),
+            json: () => req.json(),
+            form: () => req.formData(),
+            blob: () => req.blob(),
+            buffer: () => req.arrayBuffer(),
         }
-        if (contentType.includes("application/json")) {
-            return await this.#request.json();
-        }
-        if (contentType.includes("multipart/form-data") ||
-            contentType.includes("application/x-www-form-urlencoded")) {
-            return await this.#request.formData();
-        }
-        if (contentType.includes("application/octet-stream")) {
-            return await this.#request.blob(); // 文件型二进制大对象
-        }
-        // 内存型二进制数据
-        return await this.#request.arrayBuffer();
     }
 
     // 响应部分 ////////////////////////////////////////////////////
@@ -129,27 +121,17 @@ export class Context {
         if (body === undefined || body === null) {
             this.status = 204;
 
-        } else if (body instanceof FormData) {
-            this.setContentType("multipart/form-data", "utf-8");
-
-        } else if (body instanceof URLSearchParams) {
-            this.setContentType("application/x-www-form-urlencoded", "utf-8");
-
-        } else if (body instanceof Uint8Array ||
-            body instanceof Blob ||
-            body instanceof ReadableStream) {
-            this.setContentType("application/octet-stream");
-
         } else if (typeof body === "string") {
             /^\s*</.test(body) ?
                 this.setContentType("text/html", "utf-8") :
                 this.setContentType("text/plain", "utf-8");
 
-        } else if (typeof body === "object") {
+        } else if (!(body instanceof Blob) && !(body instanceof Uint8Array)
+            && !(body instanceof FormData) && !(body instanceof ReadableStream)
+            && !(body instanceof URLSearchParams)) {
             this.setContentType("application/json", "utf-8");
             body = JSON.stringify(body);
         }
-
         return new Response(body, this.#response);
     }
 

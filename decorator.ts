@@ -6,8 +6,9 @@ import { Exception } from "./exception.ts";
 import type { Decorator } from "./types.ts";
 
 /**
- * 请求方法装饰器
- * @param method 方法名
+ * 路由方法装饰器
+ * @param method 请求方法名
+ * @param path 请求路径
  * @returns
  */
 const Request = (method: string) => (path: string = ""): MethodDecorator => {
@@ -19,8 +20,8 @@ const Request = (method: string) => (path: string = ""): MethodDecorator => {
 }
 
 /**
- * 控制器装饰器
- * @param prefix 路径前缀
+ * 控制器类装饰器
+ * @param prefix 路由前缀
  * @returns
  */
 export const Controller = (prefix: string = ""): ClassDecorator => {
@@ -49,8 +50,21 @@ export const Controller = (prefix: string = ""): ClassDecorator => {
 // }
 
 /**
- * 错误处理装饰器
- * @param method 方法名
+ * 插件类装饰器
+ * @param name 插件名称（默认为类名）
+ * @returns
+ */
+// export const Plugin = (name?: string): ClassDecorator => {
+//     return (constructor: any) => {
+//         Global.addPlugin({
+//             name: name || constructor.name,
+//             instance: new constructor()
+//         });
+//     };
+// }
+
+/**
+ * 错误处理方法装饰器
  * @returns
  */
 export const ErrorHandlder = (): MethodDecorator => {
