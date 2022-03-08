@@ -1,5 +1,8 @@
 import { Reflect, join } from "./deps.ts";
-import { Container } from "./container.ts";
+import { Router } from "./router.ts";
+import { Method } from "./constant.ts";
+import { Global } from "./global.ts";
+import { Exception } from "./exception.ts";
 import type { Decorator } from "./types.ts";
 
 /**
@@ -28,7 +31,7 @@ export const Controller = (prefix: string = ""): ClassDecorator => {
         for (const decorator of decorators) {
             if (decorator.type !== "route") continue;
 
-            Container.addRoute({
+            Router.add({
                 method: decorator.name,
                 path: join('/', prefix, decorator.value),
                 handle: instance[decorator.fn]
@@ -45,5 +48,26 @@ export const Controller = (prefix: string = ""): ClassDecorator => {
 //     };
 // }
 
-export const All = Request("All");
-export const Get = Request("Get");
+/**
+ * 错误处理装饰器
+ * @param method 方法名
+ * @returns
+ */
+export const ErrorHandlder = (): MethodDecorator => {
+    return (target: any, name) => {
+        if (Global.errorHandler) {
+            throw new Exception("Duplicated error handler");
+        }
+        const instance = new target.constructor();
+        Global.errorHandler = instance[name];
+    };
+}
+
+export const All = Request(Method.ALL);
+export const Get = Request(Method.GET);
+export const Post = Request(Method.POST);
+export const Put = Request(Method.PUT);
+export const Delete = Request(Method.DELETE);
+export const Patch = Request(Method.PATCH);
+export const Head = Request(Method.HEAD);
+export const Options = Request(Method.OPTIONS);
