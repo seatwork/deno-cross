@@ -1,9 +1,5 @@
-import { Reflect, join } from "./deps.ts";
-import { Router } from "./router.ts";
 import { Method } from "./constant.ts";
-import { Global } from "./global.ts";
-import { Exception } from "./exception.ts";
-import type { Decorator } from "./types.ts";
+import { Metadata } from "./metadata.ts";
 
 /**
  * 路由方法装饰器
@@ -11,11 +7,11 @@ import type { Decorator } from "./types.ts";
  * @param path 请求路径
  * @returns
  */
-const Request = (method: string) => (path: string = ""): MethodDecorator => {
+const Request = (method: string) => (path: string): MethodDecorator => {
     return (target, name) => {
-        const decorators: Decorator[] = Reflect.getMetadata("rb:decorators", target.constructor) || [];
-        decorators.push({ type: "route", name: method, value: path, fn: name });
-        Reflect.defineMetadata("rb:decorators", decorators, target.constructor);
+        Metadata.append(target.constructor, {
+            name: method, value: path, fn: name
+        });
     };
 }
 
@@ -24,20 +20,11 @@ const Request = (method: string) => (path: string = ""): MethodDecorator => {
  * @param prefix 路由前缀
  * @returns
  */
-export const Controller = (prefix: string = ""): ClassDecorator => {
-    return (target: any) => {
-        const instance = new target();
-        const decorators: Decorator[] = Reflect.getMetadata("rb:decorators", target) || [];
-
-        for (const decorator of decorators) {
-            if (decorator.type !== "route") continue;
-
-            Router.add({
-                method: decorator.name,
-                path: join('/', prefix, decorator.value),
-                handle: instance[decorator.fn]
-            });
-        }
+export const Controller = (prefix: string): ClassDecorator => {
+    return (target) => {
+        Metadata.define(target, {
+            name: "Controller", value: prefix
+        });
     }
 }
 
@@ -69,11 +56,15 @@ export const Controller = (prefix: string = ""): ClassDecorator => {
  */
 export const ErrorHandlder = (): MethodDecorator => {
     return (target: any, name) => {
-        if (Global.errorHandler) {
-            throw new Exception("Duplicated error handler");
-        }
-        const instance = new target.constructor();
-        Global.errorHandler = instance[name];
+        // if (Global.errorHandler) {
+        //     throw new Exception("Duplicated error handler");
+        // }
+        // const instance = new target.constructor();
+        // Global.errorHandler = instance[name];
+
+        Metadata.append(target.constructor, {
+            name: "ErrorHandlder", fn: name
+        });
     };
 }
 

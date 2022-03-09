@@ -32,8 +32,13 @@ export class Context {
         return this.#params;
     }
 
-    // 获取请求路径
+    // 获取请求全路径
     get url() {
+        return this.#request.url;
+    }
+
+    // 获取请求路径
+    get path() {
         return this.#url.pathname;
     }
 
@@ -56,7 +61,7 @@ export class Context {
     get body() {
         const req = this.#request;
         if (req.bodyUsed) {
-            throw new Exception("Body already consumed");
+            this.throw("Body already consumed");
         }
         return {
             text: () => req.text(),
@@ -133,6 +138,12 @@ export class Context {
             body = JSON.stringify(body);
         }
         return new Response(body, this.#response);
+    }
+
+    // 公共部分 ////////////////////////////////////////////////////
+
+    throw(message: string, status?: number) {
+        throw new Exception(message, status);
     }
 
 }

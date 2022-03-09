@@ -2,15 +2,16 @@ import { serve, join, resolve, extname, walkSync } from "./deps.ts";
 import { Router } from "./router.ts";
 import { Context } from "./context.ts";
 import { Method, Mime, HttpStatus } from "./constant.ts";
-import { Global } from "./global.ts";
-import { Exception } from "./exception.ts";
-import type { Option, RouteFunc } from "./types.ts";
+import { Metadata } from "./metadata.ts";
+import type { Option } from "./types.ts";
 
 /**
  * 应用服务器入口
  * Run server useage: new Spark();
  */
 export class Server {
+
+    #router = new Router();
 
     /**
      * 构造并启动
@@ -27,18 +28,14 @@ export class Server {
             return;
         }
 
-        // 为静态资源添加路由（该路径下所有文件直接访问）
-        if (options.assets) {
-            Router.add({
-                method: Method.GET,
-                path: join('/', options.assets, '*'),
-                handle: this.#handleAssets
-            });
-        }
-
         // 加载装饰器、路由并启动服务
+        const assets = options.assets;
         const port = options.port;
-        this.#loadClasses().then(() => this.#run(port));
+        this.#loadClasses().then(() => {
+            Metadata.compose();
+            this.#initRoutes(assets);
+            this.#run(port);
+        });
     }
 
     /**
@@ -59,21 +56,21 @@ export class Server {
         const ctx = new Context(request);
         let body = null;
         try {
-            const route = Router.find(ctx.method, ctx.url)
-                || Router.find(Method.ALL, ctx.url);
+            const route = this.#router.find(ctx.method, ctx.path)
+                || this.#router.find(Method.ALL, ctx.path);
             if (route) {
                 ctx.params = route.params;
                 body = await route.handle(ctx);
             } else {
-                throw new Exception("Route not found", HttpStatus.NOT_FOUND);
+                ctx.throw("Route not found", HttpStatus.NOT_FOUND);
             }
         } catch (e) {
             console.error(e);
-            if (Global.errorHandler) {
+            if (Metadata.errorHandler) {
                 e.status = e.status || HttpStatus.INTERNAL_SERVER_ERROR;
                 ctx.status = e.status || HttpStatus.INTERNAL_SERVER_ERROR;
                 ctx.error = e;
-                body = await Global.errorHandler(ctx);
+                body = await Metadata.errorHandler(ctx);
             } else {
                 ctx.status = e.status || HttpStatus.INTERNAL_SERVER_ERROR;
                 body = e.message || "Internal Server Error";
@@ -89,11 +86,11 @@ export class Server {
      */
     #handleAssets(ctx: Context) {
         // 将相对路径去掉开头斜杠转为绝对路径
-        const file = resolve(ctx.url.replace(/^\/+/, ''));
+        const file = resolve(ctx.path.replace(/^\/+/, ''));
         try {
             const stat = Deno.statSync(file);
             if (stat.isDirectory) {
-                throw new Exception("Path is a directory", HttpStatus.NOT_ACCEPTABLE);
+                ctx.throw("Path is a directory", HttpStatus.NOT_ACCEPTABLE);
             }
             const ext = Mime[extname(file)];
             if (ext) {
@@ -102,11 +99,30 @@ export class Server {
             return Deno.readFileSync(file);
         } catch (e) {
             if (e instanceof Deno.errors.NotFound) {
-                throw new Exception("File not found", HttpStatus.NOT_FOUND);
+                ctx.throw("File not found", HttpStatus.NOT_FOUND);
             } else {
                 throw e;
             }
         }
+    }
+
+    /**
+     * 初始化路由器
+     * @param assets 静态资源目录相对路径
+     */
+    #initRoutes(assets?: string) {
+        // 添加静态资源路由（该路径下所有文件直接访问）
+        if (assets) {
+            this.#router.add({
+                method: Method.GET,
+                path: join('/', assets, '*'),
+                handle: this.#handleAssets
+            });
+        }
+        // 添加装饰器路由
+        Metadata.routes.forEach(route => {
+            this.#router.add(route);
+        });
     }
 
     /**

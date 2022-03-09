@@ -10,8 +10,8 @@ import { Method } from "./constant.ts";
  * @returns
  */
 const shortcut = (method: string) => (path: string, handle: any) => {
-    Router.add({ method, path, handle });
-    console.log('this======', this)
+    // Router.add({ method, path, handle });
+    // console.log('this======', this)
     return "";
 }
 

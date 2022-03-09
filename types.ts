@@ -10,7 +10,7 @@ export type Option = {
 export type RouteFunc = (path: string, handle: HandleFunc) => void;
 
 // 路由响应函数
-export type HandleFunc = (ctx: Context) => BodyInit;
+export type HandleFunc = (ctx: Context) => BodyInit | undefined;
 
 // 路由类型
 export type Route = {
@@ -22,8 +22,7 @@ export type Route = {
 
 // 装饰器类型
 export type Decorator = {
-    type: "route" | "middleware" | "plugin" | "engine";
     name: string;
-    value: string;
-    fn: string | symbol;
+    value?: string;
+    fn?: string | symbol;
 }

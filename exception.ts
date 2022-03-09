@@ -6,7 +6,7 @@ import { HttpStatus } from "./constant.ts";
  */
 export class Exception extends Error {
 
-    public status: number;
+    status: number;
 
     public constructor(message: string, status?: number) {
         super(message);

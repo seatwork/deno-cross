@@ -8,7 +8,7 @@ export class Router {
 
     // 由于x/router未实现请求方法的解析功能
     // 故本框架增加按请求方法对路由器的分组
-    static #radixGroup: Record<string, Radix> = {};
+    #radixGroup: Record<string, Radix> = {};
 
     /**
      * 添加单个路由
@@ -16,7 +16,7 @@ export class Router {
      * @param path 请求路径
      * @param fn 处理方法
      */
-    static add(route: Route): void {
+    add(route: Route): void {
         let radix = this.#radixGroup[route.method];
         if (!radix) {
             radix = new Radix();
@@ -31,7 +31,7 @@ export class Router {
      * @param path 请求路径
      * @returns Route
      */
-    static find(method: string, path: string): Route | undefined {
+    find(method: string, path: string): Route | undefined {
         const radix = this.#radixGroup[method];
         if (radix) {
             const [handle, params] = radix.find(path);
