@@ -43,6 +43,7 @@ export class Server {
      */
     #run(port: number = 3000) {
         serve((request: Request) => this.#dispatch(request), { port });
+        console.log(`\x1b[90mCross framework - https://deno.land/x/cross\x1b[0m`)
         console.log(`> \x1b[32mReady!\x1b[0m Running at \x1b[4m\x1b[36mhttp://localhost:${port}\x1b[0m`)
     }
 
@@ -86,7 +87,6 @@ export class Server {
      * @param ctx
      */
     async #callMiddlewares(ctx: Context) {
-        console.log(Metadata.middlewares)
         for (const middleware of Metadata.middlewares) {
             await middleware.callback(ctx);
         }
