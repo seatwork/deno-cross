@@ -61,6 +61,7 @@ export class Server {
                 || this.#router.find(Method.ALL, ctx.path);
             if (route) {
                 ctx.params = route.params;
+                await this.#callMiddlewares(ctx);
                 body = await route.callback(ctx);
             } else {
                 ctx.throw("Route not found", HttpStatus.NOT_FOUND);
@@ -78,6 +79,17 @@ export class Server {
             }
         }
         return ctx.build(body);
+    }
+
+    /**
+     * Call middlewares by priority
+     * @param ctx
+     */
+    async #callMiddlewares(ctx: Context) {
+        console.log(Metadata.middlewares)
+        for (const middleware of Metadata.middlewares) {
+            await middleware.callback(ctx);
+        }
     }
 
     /**

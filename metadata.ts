@@ -1,4 +1,4 @@
-import type { Decorator, Route, Callback } from "./types.ts";
+import type { Decorator, Middleware, Route, Callback } from "./types.ts";
 import { Reflect, join } from "./deps.ts";
 import { Exception } from "./exception.ts";
 
@@ -11,7 +11,7 @@ export class Metadata {
     static #constructors: Set<any> = new Set();
 
     static plugins: Record<string, any> = {};
-    static middlewares: Callback[] = [];
+    static middlewares: Middleware[] = [];
     static routes: Route[] = [];
     static errorHandler: Callback | undefined;
 
@@ -58,11 +58,12 @@ export class Metadata {
             // Iterate method decorators of constructor-bound
             for (const methodDecorator of decorators) {
                 if (!methodDecorator.fn) continue;
-                const handler = instance[methodDecorator.fn]
+                const callback = instance[methodDecorator.fn]
 
                 // Parse middleware handlers
                 if (methodDecorator.name === "Middleware") {
-                    this.middlewares.push(handler);
+                    const priority = methodDecorator.value as number;
+                    this.middlewares.push({ callback, priority });
                     continue;
                 }
 
@@ -71,14 +72,15 @@ export class Metadata {
                     if (this.errorHandler) {
                         throw new Exception("Duplicated error handler");
                     }
-                    this.errorHandler = handler;
+                    this.errorHandler = callback;
                     continue;
                 }
 
                 // Add a route (the class must be annotated with @Controller)
                 if (classDecorator.name === "Controller") {
-                    const prefix = classDecorator.value || "";
-                    const path = methodDecorator.value || "";
+                    const prefix = classDecorator.value as string || "";
+                    const path = methodDecorator.value as string || "";
+
                     this.routes.push({
                         method: methodDecorator.name,
                         path: join('/', prefix, path),
@@ -87,6 +89,8 @@ export class Metadata {
                 }
             }
         }
+        // Sort middlewares
+        this.middlewares.sort((a, b) => a.priority - b.priority);
     }
 
     static print() {

@@ -11,10 +11,16 @@ export type Route = {
     params?: Record<string, string>;
 }
 
+// Middleware object
+export type Middleware = {
+    priority: number;
+    callback: Callback;
+}
+
 // Decorator object
 export type Decorator = {
     name: string;
-    value?: string;
+    value?: string | number;
     fn?: string | symbol;
 }
 

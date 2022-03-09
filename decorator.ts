@@ -28,13 +28,18 @@ export const Controller = (prefix?: string): ClassDecorator => {
     }
 }
 
-// export const Middleware = (): MethodDecorator => {
-//     return (target, name) => {
-//         const decorators = Reflect.getMetadata("rb:decorators", target.constructor) || [];
-//         decorators.push({ type: "middleware", name: "", value: "", fn: name });
-//         Reflect.defineMetadata("rb:decorators", decorators, target.constructor);
-//     };
-// }
+/**
+ * Middleware decorator
+ * @param priority
+ * @returns
+ */
+export const Middleware = (priority: number): MethodDecorator => {
+    return (target, name) => {
+        Metadata.append(target.constructor, {
+            name: "Middleware", value: priority, fn: name
+        });
+    };
+}
 
 /**
  * Plugin decorator
