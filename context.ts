@@ -5,7 +5,6 @@ import { Exception } from "./exception.ts";
  * Application context (request and response)
  */
 export class Context {
-    [index: string]: any; // Custom properties (such as plugins)
 
     #request: Request;
     #url: URL;
@@ -13,6 +12,8 @@ export class Context {
 
     #response: { headers: Headers; status?: number; statusText?: string }
         = { headers: new Headers() };
+
+    #error: Error | undefined;
 
     // Creates new context for each request
     constructor(request: Request) {
@@ -132,6 +133,14 @@ export class Context {
     }
 
     // SHORTCUTS ////////////////////////////////////////////////////
+
+    set error(e: Error | undefined) {
+        this.#error = e;
+    }
+
+    get error() {
+        return this.#error;
+    }
 
     throw(message: string, status?: number) {
         throw new Exception(message, status);
