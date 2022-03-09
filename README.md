@@ -5,7 +5,7 @@ A tiny and strong framework for deno web application.
 ## Get started
 
 ```
-import * from "https://deno.land/x/cross/mod.ts";
+import { Cross } from "https://deno.land/x/cross/mod.ts";
 ```
 
 ### Shortcut mode
@@ -21,6 +21,8 @@ Cross(ctx => {
 2. Creates quick routes.
 
 ```
+import { Cross, get, post } from "https://deno.land/x/cross/mod.ts";
+
 Cross(
     get("/:user", ctx => {
         return ctx.params;
@@ -34,6 +36,8 @@ Cross(
 3. Starts with options.
 
 ```
+import { Cross, get, post } from "https://deno.land/x/cross/mod.ts";
+
 Cross({
         assets: "/static/dir/path",
         port: 3000
@@ -59,6 +63,8 @@ all decorators at startup, it is basically the same in runtime.
 
 ```
 // index.ts
+import { Cross } from "https://deno.land/x/cross/mod.ts";
+
 // If no options, the empty {} is necessary
 Cross({})
 ```
@@ -67,6 +73,8 @@ Cross({})
 
 ```
 // controller.ts
+import { Controller, Get, Context } from "https://deno.land/x/cross/mod.ts";
+
 @Controller("/prefix")
 export class MyController {
     @Get("/:user")
@@ -83,6 +91,8 @@ role of the middleware parameter is to set the execution priority.
 
 ```
 // middleware.ts
+import { Middleware, Context } from "https://deno.land/x/cross/mod.ts";
+
 export class MyMiddleware {
     @Middleware(1)
     cors(ctx: Context) {
@@ -102,6 +112,8 @@ bound to the context.
 
 ```
 // plugin.ts
+import { Plugin } from "https://deno.land/x/cross/mod.ts";
+
 @Plugin("redis")
 export class Redis {
     constructor() {
@@ -127,9 +139,11 @@ only once. This decorator has no parameters.
 
 ```
 // error.ts
+import { ErrorHandler, Context } from "https://deno.land/x/cross/mod.ts";
+
 export class AnyClass {
     @ErrorHandler
-    error(ctx: Content) {
+    error(ctx: Context) {
         console.log(ctx.error)
     }
 }
