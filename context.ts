@@ -93,10 +93,6 @@ export class Context {
         });
     }
 
-    hasHeader(key: string) {
-        this.#response.headers.has(key);
-    }
-
     setContentType(value: string, charset?: string) {
         if (!this.#response.headers.has("content-type")) {
             if (charset) value += ";charset=" + charset;
