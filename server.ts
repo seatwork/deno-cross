@@ -11,6 +11,7 @@ import { Method, Mime, HttpStatus } from "./constant.ts";
 export class Server {
 
     #router = new Router();
+    #time = Date.now();
 
     /**
      * Construct and start server
@@ -44,8 +45,10 @@ export class Server {
     #run(port?: number) {
         port = port || 3000;
         serve((request: Request) => this.#dispatch(request), { port });
-        console.log(`\x1b[90mCross framework - https://deno.land/x/cross\x1b[0m`)
-        console.log(`> \x1b[32mReady!\x1b[0m Running at \x1b[4m\x1b[36mhttp://localhost:${port}\x1b[0m`)
+
+        console.log(`\x1b[90m[Cross] https://deno.land/x/cross\x1b[0m`)
+        console.log(`[Cross] Server is running at \x1b[4m\x1b[36mhttp://localhost:${port}\x1b[0m`)
+        console.log("[Cross] Elapsed time:", Date.now() - this.#time, "ms");
     }
 
     /**
