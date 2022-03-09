@@ -10,7 +10,7 @@ export class Metadata {
     // To avoid creating instance repeatedly, use "Set" to automatically deduplicate.
     static #constructors: Set<any> = new Set();
 
-    static plugins: any[] = [];
+    static plugins: Record<string, any> = {};
     static middlewares: Callback[] = [];
     static routes: Route[] = [];
     static errorHandler: Callback | undefined;
@@ -50,8 +50,8 @@ export class Metadata {
             const decorators: Decorator[] = Reflect.getMetadata("cross:decorators", c) || [];
 
             // Parse plugin decorators (singleton binding, independent of specific methods)
-            if (classDecorator.name === "Plugin") {
-                this.plugins.push(instance);
+            if (classDecorator.name === "Plugin" && classDecorator.value) {
+                this.plugins[classDecorator.value] = instance;
                 continue;
             }
 

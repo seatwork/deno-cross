@@ -20,9 +20,9 @@ const Request = (method: string) => (path: string): MethodDecorator => {
  * @param prefix
  * @returns
  */
-export const Controller = (prefix: string): ClassDecorator => {
-    return (target) => {
-        Metadata.define(target, {
+export const Controller = (prefix?: string): ClassDecorator => {
+    return (constructor) => {
+        Metadata.define(constructor, {
             name: "Controller", value: prefix
         });
     }
@@ -41,14 +41,13 @@ export const Controller = (prefix: string): ClassDecorator => {
  * @param name
  * @returns
  */
-// export const Plugin = (name: string): ClassDecorator => {
-//     return (constructor: any) => {
-//         Global.addPlugin({
-//             name: name || constructor.name,
-//             instance: new constructor()
-//         });
-//     };
-// }
+export const Plugin = (name: string): ClassDecorator => {
+    return (constructor) => {
+        Metadata.define(constructor, {
+            name: "Plugin", value: name
+        });
+    }
+}
 
 /**
  * ErrorHandlder decorator

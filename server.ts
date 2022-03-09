@@ -53,6 +53,8 @@ export class Server {
      */
     async #dispatch(request: Request): Promise<Response> {
         const ctx = new Context(request);
+        Object.assign(ctx, Metadata.plugins);
+
         let body = null;
         try {
             const route = this.#router.find(ctx.method, ctx.path)

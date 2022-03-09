@@ -23,8 +23,5 @@ export const Cross = (
     }
 
     const options = arg as Option;
-    if (options.assets || options.port) {
-        return new Server(options, routes);
-    }
-
+    return new Server(options, routes);
 }
