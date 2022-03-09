@@ -10,7 +10,7 @@ export class Metadata {
     // To avoid creating instance repeatedly, use "Set" to automatically deduplicate.
     static #constructors: Set<any> = new Set();
 
-    static plugins: Record<string, any> = {};
+    static plugins: Record<string, unknown> = {};
     static middlewares: Middleware[] = [];
     static routes: Route[] = [];
     static errorHandler: Callback | undefined;
