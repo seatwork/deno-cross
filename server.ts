@@ -72,7 +72,7 @@ export class Server {
                 ctx.throw("Route not found", HttpStatus.NOT_FOUND);
             }
         } catch (e) {
-            console.error(e);
+            console.error("\x1b[31m[Cross]", e, "\x1b[0m");
             if (Metadata.errorHandler) {
                 e.status = e.status || HttpStatus.INTERNAL_SERVER_ERROR;
                 ctx.status = e.status || HttpStatus.INTERNAL_SERVER_ERROR;
