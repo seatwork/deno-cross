@@ -1,4 +1,4 @@
-import type { HandleFunc } from "./types.ts";
+import type { Callback } from "./types.ts";
 
 /**
  * Radix tree modified version (Modify the return parameters type)
@@ -9,7 +9,7 @@ export class Radix {
 
     path = "";
     children = new Map<string, Radix>();
-    handler: HandleFunc | undefined;
+    handler: Callback | undefined;
 
     constructor(node?: Partial<Radix>) {
         if (node) {
@@ -17,7 +17,7 @@ export class Radix {
         }
     }
 
-    add(path: string, handler: HandleFunc): void {
+    add(path: string, handler: Callback): void {
         let n: Radix = this;
 
         let i = 0;
@@ -66,8 +66,8 @@ export class Radix {
         }
     }
 
-    find(path: string): [handler: HandleFunc | undefined, params: Map<string, string>] {
-        let handler: HandleFunc | undefined;
+    find(path: string): [handler: Callback | undefined, params: Map<string, string>] {
+        let handler: Callback | undefined;
         const params = new Map<string, string>();
         const stack: [node: Radix, path: string, vis: boolean][] = [
             [this, path, false],
@@ -147,7 +147,7 @@ export class Radix {
         return [handler, params];
     }
 
-    #merge = (path: string, handler?: HandleFunc): Radix => {
+    #merge = (path: string, handler?: Callback): Radix => {
         let n: Radix = this;
 
         if (n.path === "" && n.children.size === 0) {
@@ -206,7 +206,7 @@ export class Radix {
         return n;
     };
 
-    #insert = (path: string, handler?: HandleFunc): Radix => {
+    #insert = (path: string, handler?: Callback): Radix => {
         let n: Radix = this;
         let c = n.children.get(path[0]);
 

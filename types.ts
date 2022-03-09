@@ -1,28 +1,25 @@
 import { Context } from "./context.ts";
 
-// 启动参数
-export type Option = {
-    assets?: string; // 静态资源目录路径
-    port?: number; // 监听端口
-}
+// Route callback function
+export type Callback = (ctx: Context) => void;
 
-// 路由函数
-export type RouteFunc = (path: string, handle: HandleFunc) => void;
-
-// 路由响应函数
-export type HandleFunc = (ctx: Context) => BodyInit | undefined;
-
-// 路由类型
+// Route object
 export type Route = {
     method: string;
     path: string,
-    handle: HandleFunc;
+    callback: Callback;
     params?: Record<string, string>;
 }
 
-// 装饰器类型
+// Decorator object
 export type Decorator = {
     name: string;
     value?: string;
     fn?: string | symbol;
+}
+
+// Startup options
+export type Option = {
+    assets?: string; // Static resource directory path
+    port?: number;   // Server listening port
 }

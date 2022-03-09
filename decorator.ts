@@ -2,9 +2,9 @@ import { Method } from "./constant.ts";
 import { Metadata } from "./metadata.ts";
 
 /**
- * 路由方法装饰器
- * @param method 请求方法名
- * @param path 请求路径
+ * Route decorator
+ * @param method
+ * @param path
  * @returns
  */
 const Request = (method: string) => (path: string): MethodDecorator => {
@@ -16,8 +16,8 @@ const Request = (method: string) => (path: string): MethodDecorator => {
 }
 
 /**
- * 控制器类装饰器
- * @param prefix 路由前缀
+ * Controller decorator
+ * @param prefix
  * @returns
  */
 export const Controller = (prefix: string): ClassDecorator => {
@@ -37,11 +37,11 @@ export const Controller = (prefix: string): ClassDecorator => {
 // }
 
 /**
- * 插件类装饰器
- * @param name 插件名称（默认为类名）
+ * Plugin decorator
+ * @param name
  * @returns
  */
-// export const Plugin = (name?: string): ClassDecorator => {
+// export const Plugin = (name: string): ClassDecorator => {
 //     return (constructor: any) => {
 //         Global.addPlugin({
 //             name: name || constructor.name,
@@ -51,17 +51,11 @@ export const Controller = (prefix: string): ClassDecorator => {
 // }
 
 /**
- * 错误处理方法装饰器
+ * ErrorHandlder decorator
  * @returns
  */
 export const ErrorHandlder = (): MethodDecorator => {
-    return (target: any, name) => {
-        // if (Global.errorHandler) {
-        //     throw new Exception("Duplicated error handler");
-        // }
-        // const instance = new target.constructor();
-        // Global.errorHandler = instance[name];
-
+    return (target, name) => {
         Metadata.append(target.constructor, {
             name: "ErrorHandlder", fn: name
         });

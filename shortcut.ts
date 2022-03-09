@@ -1,18 +1,14 @@
-import type { HandleFunc } from "./types.ts";
-import { Router } from "./router.ts";
+import type { Callback } from "./types.ts";
 import { Method } from "./constant.ts";
 
 /**
- * Create route in SHORTCUT MODE
- * (more lightweight than DECORATOR MODE)
- * @param method request method
- * @param path request path
- * @returns
+ * Create routes in SHORTCUT MODE (more lightweight than DECORATOR MODE)
+ * @param method
+ * @param path
+ * @returns Route
  */
-const shortcut = (method: string) => (path: string, handle: any) => {
-    // Router.add({ method, path, handle });
-    // console.log('this======', this)
-    return "";
+const shortcut = (method: string) => (path: string, callback: Callback) => {
+    return { method, path, callback };
 }
 
 export const all = shortcut(Method.ALL);

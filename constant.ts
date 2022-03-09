@@ -1,4 +1,4 @@
-// 请求方法主键
+// Request methods
 export const enum Method {
     ALL = "ALL",
     GET = "GET",
@@ -10,7 +10,7 @@ export const enum Method {
     OPTIONS = "OPTIONS",
 }
 
-// 常用HTTP状态码
+// Common HTTP status codes
 export const enum HttpStatus {
     SUCCESS = 200,
     NO_CONTENT = 204,
@@ -29,7 +29,7 @@ export const enum HttpStatus {
     INTERNAL_SERVER_ERROR = 500,
 }
 
-// 常用静态文件类型
+// Common mimetypes
 export const Mime: Record<string, string> = {
     ".htm": "text/html;charset:utf-8",
     ".html": "text/html;charset:utf-8",

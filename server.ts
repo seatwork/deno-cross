@@ -1,46 +1,45 @@
+import type { Option, Route } from "./types.ts";
 import { serve, join, resolve, extname, walkSync } from "./deps.ts";
-import { Router } from "./router.ts";
 import { Context } from "./context.ts";
-import { Method, Mime, HttpStatus } from "./constant.ts";
+import { Router } from "./router.ts";
 import { Metadata } from "./metadata.ts";
-import type { Option } from "./types.ts";
+import { Method, Mime, HttpStatus } from "./constant.ts";
 
 /**
- * 应用服务器入口
- * Run server useage: new Spark();
+ * HTTP Server
  */
 export class Server {
 
     #router = new Router();
 
     /**
-     * 构造并启动
-     * @param options 可选项|路由方法
+     * Construct and start server
+     * @param options { assets, port }
+     * @param routes Route[]
      * @returns
      */
-    constructor(options?: Option | string[]) {
-        options = options || {};
-
-        // Shortcut Mode
-        if (Array.isArray(options)) {
-            // todo shortcut mode
-            this.#run();
-            return;
-        }
-
-        // 加载装饰器、路由并启动服务
+    constructor(options: Option, routes: Route[]) {
         const assets = options.assets;
         const port = options.port;
-        this.#loadClasses().then(() => {
-            Metadata.compose();
-            this.#initRoutes(assets);
+
+        // Run SHORTCUT MODE if routes exist
+        // No need to scan to load decorator classes
+        if (routes.length > 0) {
+            this.#loadRoutes(routes, assets);
             this.#run(port);
-        });
+        } else {
+            // Run DECORATOR MODE if routes not exist
+            this.#loadClasses().then(() => {
+                Metadata.compose();
+                this.#loadRoutes(Metadata.routes, assets);
+                this.#run(port);
+            });
+        }
     }
 
     /**
-     * 启动 HTTP 服务
-     * @param port 监听端口（默认值 3000）
+     * Start HTTP server
+     * @param port default 3000
      */
     #run(port: number = 3000) {
         serve((request: Request) => this.#dispatch(request), { port });
@@ -48,7 +47,7 @@ export class Server {
     }
 
     /**
-     * 处理动态请求
+     * Handles dynamic requests
      * @param request
      * @returns
      */
@@ -60,7 +59,7 @@ export class Server {
                 || this.#router.find(Method.ALL, ctx.path);
             if (route) {
                 ctx.params = route.params;
-                body = await route.handle(ctx);
+                body = await route.callback(ctx);
             } else {
                 ctx.throw("Route not found", HttpStatus.NOT_FOUND);
             }
@@ -80,12 +79,12 @@ export class Server {
     }
 
     /**
-     * 静态资源处理
+     * Handles static resource requests
      * @param ctx
      * @returns
      */
     #handleAssets(ctx: Context) {
-        // 将相对路径去掉开头斜杠转为绝对路径
+        // Removes the leading slash and converts relative path to absolute path
         const file = resolve(ctx.path.replace(/^\/+/, ''));
         try {
             const stat = Deno.statSync(file);
@@ -107,26 +106,28 @@ export class Server {
     }
 
     /**
-     * 初始化路由器
-     * @param assets 静态资源目录相对路径
+     * Initialize the router
+     * @param routes Route[]
+     * @param assets Relative path of assets directory
      */
-    #initRoutes(assets?: string) {
-        // 添加静态资源路由（该路径下所有文件直接访问）
+    #loadRoutes(routes: Route[], assets?: string) {
+        // Add dynamic routes
+        routes.forEach(route => this.#router.add(route));
+
+        // Add static routes
+        // All files under this path are directly accessible
         if (assets) {
             this.#router.add({
                 method: Method.GET,
                 path: join('/', assets, '*'),
-                handle: this.#handleAssets
+                callback: this.#handleAssets
             });
         }
-        // 添加装饰器路由
-        Metadata.routes.forEach(route => {
-            this.#router.add(route);
-        });
     }
 
     /**
-     * 加载当前项目下所有.ts结尾的类文件以便触发装饰器
+     * Loads (imports) all .ts files under the current project
+     * to trigger the decorators
      */
     async #loadClasses(): Promise<void> {
         for (const entry of walkSync(resolve())) {

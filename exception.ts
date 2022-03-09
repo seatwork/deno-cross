@@ -1,8 +1,8 @@
 import { HttpStatus } from "./constant.ts";
 
 /**
- * 自定义异常
- * 增加 HTTP 状态码
+ * Custom exception
+ * Add HTTP status code
  */
 export class Exception extends Error {
 
