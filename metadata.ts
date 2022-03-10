@@ -102,6 +102,11 @@ export class Metadata {
                     continue;
                 }
 
+                // Ignore template decorator (find later)
+                if (decorator.name === "Template") {
+                    continue;
+                }
+
                 // Parse routes
                 if (!controller) {
                     throw new Exception("The class of route must be annotated with @Controller");
