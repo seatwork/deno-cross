@@ -11,6 +11,10 @@ export class Router {
     // adds the grouping of routers according to request method
     #radixGroup: Record<string, Radix> = {};
 
+    // Since the route has other properties (such as template),
+    // it is necessary to cache all routes for finding later
+    #routes: Route[] = [];
+
     /**
      * Add a route
      * @param route Route
@@ -22,6 +26,7 @@ export class Router {
             this.#radixGroup[route.method] = radix;
         }
         radix.add(route.path, route.callback);
+        this.#routes.push(route);
     }
 
     /**
@@ -35,9 +40,15 @@ export class Router {
         if (radix) {
             const [callback, params] = radix.find(path);
             if (callback) {
-                const p: Record<string, string> = {};
-                for (const [k, v] of params) p[k] = v;
-                return { method, path, callback, params: p };
+
+                // Since the route has other properties (such as template),
+                // it is necessary to re-find the complete route according to the callback
+                const route = this.#routes.find(v => v.callback === callback);
+                if (route) {
+                    route.params = {};
+                    for (const [k, v] of params) route.params[k] = v;
+                    return route;
+                }
             }
         }
     }
