@@ -46,8 +46,9 @@ export class Server {
         port = port || 3000;
         serve((request: Request) => this.#dispatch(request), { port });
 
-        console.log(`\x1b[90m[Cross] https://deno.land/x/cross\x1b[0m`)
-        console.log(`[Cross] Server is running at \x1b[4m\x1b[36mhttp://localhost:${port}\x1b[0m`)
+        console.log(`\x1b[90m[Cross] ${this.#version()}\x1b[0m`);
+        console.log(`\x1b[90m[Cross] Reference: https://deno.land/x/cross\x1b[0m`);
+        console.log(`[Cross] Server is running at \x1b[4m\x1b[36mhttp://localhost:${port}\x1b[0m`);
         console.log("[Cross] Elapsed time:", Date.now() - this.#time, "ms");
     }
 
@@ -163,6 +164,15 @@ export class Server {
                 await import(entry.path);
             }
         }
+    }
+
+    /**
+     * Format versions
+     * @returns
+     */
+    #version() {
+        const vers = JSON.stringify(Deno.version);
+        return vers.replace(/(\"|{|})/g, "").replace(/(:|,)/g, "$1 ");
     }
 
 }
