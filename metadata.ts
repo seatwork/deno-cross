@@ -10,6 +10,7 @@ export class Metadata {
     // To avoid creating instance repeatedly, use "Set" to automatically deduplicate.
     static #constructors: Set<any> = new Set();
 
+    // All the global metadata at runtime
     static plugins: Record<string, unknown> = {};
     static middlewares: Middleware[] = [];
     static routes: Route[] = [];
@@ -30,8 +31,8 @@ export class Metadata {
             decorators.push(decorator);
             Reflect.defineMetadata("class:decorators", decorators, constructor);
         } else {
-            // There may be also more than one method decorator on single method
-            // Defines method decorators group by method name ("fn" in this case)
+            // There may be also more than one method decorator on single method,
+            // so defines method decorators group by method name (which is "fn" in this case)
             const fn = decorator.fn as string;
             const decoratorGroup: Record<string, Decorator[]>
                 = Reflect.getMetadata("method:decorators", constructor) || {};
@@ -62,6 +63,7 @@ export class Metadata {
                     if (this.engineRender) {
                         throw new Exception("Duplicated engine renderer");
                     }
+                    // "value" is the name of render method
                     this.engineRender = instance[decorator.value];
                     continue;
                 }
@@ -102,21 +104,21 @@ export class Metadata {
                     continue;
                 }
 
-                // Ignore template decorator (find later)
+                // Ignore template decorator (but will be used later)
                 if (decorator.name === "Template") {
                     continue;
                 }
 
-                // Parse routes
+                // Parse routes such as GET, POST, PUT...
                 if (!controller) {
                     throw new Exception("The class of route must be annotated with @Controller");
                 }
-                const prefix = controller.value as string || "";
-                const path = decorator.value as string || "";
 
                 // Find template decorator in the same method scope
                 const tmpl: Decorator | undefined = decorators.find(v => v.name === "Template");
                 const template = tmpl ? tmpl.value as string : undefined;
+                const prefix = controller.value as string || "";
+                const path = decorator.value as string || "";
 
                 this.routes.push({
                     method: decorator.name,
