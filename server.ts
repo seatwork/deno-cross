@@ -64,15 +64,25 @@ export class Server {
         try {
             const route = this.#router.find(ctx.method, ctx.path)
                 || this.#router.find(Method.ALL, ctx.path);
+
             if (route) {
-                ctx.params = route.params;
+                ctx.params = route.params || {};
                 await this.#callMiddlewares(ctx);
                 body = await route.callback(ctx);
+
+                if (route.template) {
+                    if (Metadata.engineRender) {
+                        body = await Metadata.engineRender(route.template, body);
+                    } else {
+                        ctx.throw("Template engine has not been configured", HttpStatus.INTERNAL_SERVER_ERROR);
+                    }
+                }
             } else {
                 ctx.throw("Route not found", HttpStatus.NOT_FOUND);
             }
         } catch (e) {
             console.error("\x1b[31m[Cross]", e, "\x1b[0m");
+
             if (Metadata.errorHandler) {
                 e.status = e.status || HttpStatus.INTERNAL_SERVER_ERROR;
                 ctx.status = e.status || HttpStatus.INTERNAL_SERVER_ERROR;
