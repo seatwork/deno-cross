@@ -6,6 +6,8 @@ import { Exception } from "./exception.ts";
  */
 export class Context {
 
+    [index: string]: any; // Custom properties
+
     #request: Request;
     #url: URL;
     #params: Record<string, string> = {};
@@ -13,20 +15,24 @@ export class Context {
     #response: { headers: Headers; status?: number; statusText?: string }
         = { headers: new Headers() };
 
-    #error?: Error;
+    #error?: Exception;
 
     // Creates new context for each request
     constructor(request: Request) {
         this.#request = request;
         this.#url = new URL(request.url);
+
+        // Set query string parameters
+        for (const [k, v] of this.#url.searchParams) {
+            this.#params[k] = v;
+        }
     }
 
     // REQUEST PART /////////////////////////////////////////////////
 
-    // Set request parameters (path + query string)
-    set params(p: Record<string, string> | undefined) {
-        if (p) Object.assign(this.#params, p);
-        for (const [k, v] of this.#url.searchParams) this.#params[k] = v;
+    // Set route parameters
+    set params(p: Record<string, string>) {
+        Object.assign(this.#params, p);
     }
 
     // Get request parameters
@@ -134,7 +140,7 @@ export class Context {
 
     // SHORTCUTS ////////////////////////////////////////////////////
 
-    set error(e: Error | undefined) {
+    set error(e: Exception | undefined) {
         this.#error = e;
     }
 
