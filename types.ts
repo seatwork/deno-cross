@@ -1,27 +1,32 @@
 import { Context } from "./context.ts";
 
-// Route callback function
+// Route callback function of the controller
 export type Callback = (ctx: Context) => void;
 
-// Route object
+// Render function of the template engine
+export type Renderer = (tmplFile: string, data: unknown) => string;
+
+// Decorator type
+export type Decorator = {
+    type: "class" | "method";
+    name: string;
+    value?: string | number;
+    fn?: string | symbol;
+}
+
+// Route type
 export type Route = {
     method: string;
     path: string,
     callback: Callback;
+    template?: string;
     params?: Record<string, string>;
 }
 
-// Middleware object
+// Middleware type
 export type Middleware = {
     priority: number;
     callback: Callback;
-}
-
-// Decorator object
-export type Decorator = {
-    name: string;
-    value?: string | number;
-    fn?: string | symbol;
 }
 
 // Startup options

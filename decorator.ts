@@ -10,7 +10,45 @@ import { Metadata } from "./metadata.ts";
 const Request = (method: string) => (path: string): MethodDecorator => {
     return (target, name) => {
         Metadata.append(target.constructor, {
-            name: method, value: path, fn: name
+            type: "method", name: method, value: path, fn: name
+        });
+    };
+}
+
+/**
+ * Middleware decorator
+ * @param priority
+ * @returns
+ */
+export const Middleware = (priority: number): MethodDecorator => {
+    return (target, name) => {
+        Metadata.append(target.constructor, {
+            type: "method", name: "Middleware", value: priority, fn: name
+        });
+    };
+}
+
+/**
+ * Template decorator
+ * @param path template file path
+ * @returns
+ */
+export const Template = (path: string): MethodDecorator => {
+    return (target, name) => {
+        Metadata.append(target.constructor, {
+            type: "method", name: "Template", value: path, fn: name
+        });
+    };
+}
+
+/**
+ * ErrorHandlder decorator
+ * @returns
+ */
+export const ErrorHandlder = (): MethodDecorator => {
+    return (target, name) => {
+        Metadata.append(target.constructor, {
+            type: "method", name: "ErrorHandlder", fn: name
         });
     };
 }
@@ -22,23 +60,10 @@ const Request = (method: string) => (path: string): MethodDecorator => {
  */
 export const Controller = (prefix?: string): ClassDecorator => {
     return (constructor) => {
-        Metadata.define(constructor, {
-            name: "Controller", value: prefix
+        Metadata.append(constructor, {
+            type: "class", name: "Controller", value: prefix
         });
     }
-}
-
-/**
- * Middleware decorator
- * @param priority
- * @returns
- */
-export const Middleware = (priority: number): MethodDecorator => {
-    return (target, name) => {
-        Metadata.append(target.constructor, {
-            name: "Middleware", value: priority, fn: name
-        });
-    };
 }
 
 /**
@@ -48,22 +73,23 @@ export const Middleware = (priority: number): MethodDecorator => {
  */
 export const Plugin = (name: string): ClassDecorator => {
     return (constructor) => {
-        Metadata.define(constructor, {
-            name: "Plugin", value: name
+        Metadata.append(constructor, {
+            type: "class", name: "Plugin", value: name
         });
     }
 }
 
 /**
- * ErrorHandlder decorator
+ * Engine decorator
+ * @param renderer render method name
  * @returns
  */
-export const ErrorHandlder = (): MethodDecorator => {
-    return (target, name) => {
-        Metadata.append(target.constructor, {
-            name: "ErrorHandlder", fn: name
+export const Engine = (renderer: string): ClassDecorator => {
+    return (constructor) => {
+        Metadata.append(constructor, {
+            type: "class", name: "Engine", value: renderer
         });
-    };
+    }
 }
 
 export const All = Request(Method.ALL);
