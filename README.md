@@ -10,7 +10,7 @@ import { Cross } from "https://deno.land/x/cross/mod.ts";
 
 ### Shortcut mode
 
-1. Handles all get requests.
+1. Handles all requests.
 
 ```
 Cross(ctx => {
@@ -51,15 +51,16 @@ Cross({
 );
 ```
 
-Note that features such as plugins, middlewares, and unified error handling
-cannot be used in shortcut mode, and you must solve them in other ways.
+Note that features such as plugins, middlewares,template engine and unified
+error handling cannot be used in shortcut mode, you must solve them in other
+ways.
 
 ### Decorator mode
 
 If no route is set in the startup parameters, the framework will automatically
 switch to decorator mode. The only difference in performance between the
-decorator mode and the shortcut mode is that the former needs to scan and load
-all decorators at startup, it is basically the same in runtime.
+shortcut mode and the decorator mode is that the latter needs to scan and load
+all decorators at startup, it is almost the same in runtime.
 
 ```
 // index.ts
@@ -94,13 +95,13 @@ role of the middleware parameter is to set the execution priority.
 import { Middleware, Context } from "https://deno.land/x/cross/mod.ts";
 
 export class MyMiddleware {
-    @Middleware(1)
-    cors(ctx: Context) {
-        // todo something
-    }
     @Middleware(2)
+    cors(ctx: Context) {
+        // todo something second
+    }
+    @Middleware(1)
     auth(ctx: Context) {
-        // todo something
+        // todo something first
     }
 }
 ```
@@ -131,10 +132,50 @@ export class Redis {
 Then you can use redis object as singleton instance in any controllers with
 `ctx.redis`.
 
-#### 4. ErrorHandlder
+#### 4. Engine
+
+Define one and only one engine decorator that can render templates file with
+specific data. The parameter of this decorator is the core method of rendering
+the template, it accepts two parameters: template file path and rendering data.
+
+```
+// engine.ts
+import { Engine } from "https://deno.land/x/cross/mod.ts";
+
+@Engine("render")
+export class MyEngine {
+
+    render(tmplFile, data) {
+        // return html string
+    }
+}
+```
+
+#### 5. Template
+
+Template decorator is used to decorate controller handlers, the parameters is
+template file path. Note that if you don't define any template engine, this
+decorator will throw an error.
+
+```
+// controller.ts
+import { Controller, Template, Get, Context } from "https://deno.land/x/cross/mod.ts";
+
+@Controller("/prefix")
+export class MyController {
+
+    @Get("/:user")
+    @Template("index.tmpl")
+    user(ctx: Context) {
+        return ctx.params;
+    }
+}
+```
+
+#### 6. ErrorHandlder
 
 If an error handler decorator is defined, all errors within the framework will
-be handled by it. Like middleware, you can define it in any class method, but
+be handled by it. Like middleware, you can define it in any class method but
 only once. This decorator has no parameters.
 
 ```
@@ -171,27 +212,29 @@ same parameters.
 
 #### Parameters
 
-| name     | type     | required                        | description |
-| -------- | -------- | ------------------------------- | ----------- |
-| path     | string   | Route path based on radix tree. |             |
-| callback | function | Request handler with context.   |             |
+| name     | type     | required | description                     |
+| -------- | -------- | -------- | ------------------------------- |
+| path     | string   | false    | Route path based on radix tree. |
+| callback | function | false    | Request handler with context.   |
 
 ### Decorators
 
-| name           | type            | parameters |
-| -------------- | --------------- | ---------- |
-| @Controller    | ClassDecorator  | string     |
-| @Plugin        | ClassDecorator  | string     |
-| @All           | MethodDecorator | string     |
-| @Get           | MethodDecorator | string     |
-| @Post          | MethodDecorator | string     |
-| @Put           | MethodDecorator | string     |
-| @Delete        | MethodDecorator | string     |
-| @Patch         | MethodDecorator | string     |
-| @Head          | MethodDecorator | string     |
-| @Options       | MethodDecorator | string     |
-| @Middleware    | MethodDecorator | number     |
-| @ErrorHandlder | MethodDecorator | undefined  |
+| name           | type            | parameters | parameter description              |
+| -------------- | --------------- | ---------- | ---------------------------------- |
+| @Controller    | ClassDecorator  | string     | Prefix for request route           |
+| @Plugin        | ClassDecorator  | string     | Plugin name with context           |
+| @Engine        | ClassDecorator  | string     | Render method name in engine class |
+| @All           | MethodDecorator | string     | Route path                         |
+| @Get           | MethodDecorator | string     | Route path                         |
+| @Post          | MethodDecorator | string     | Route path                         |
+| @Put           | MethodDecorator | string     | Route path                         |
+| @Delete        | MethodDecorator | string     | Route path                         |
+| @Patch         | MethodDecorator | string     | Route path                         |
+| @Head          | MethodDecorator | string     | Route path                         |
+| @Options       | MethodDecorator | string     | Route path                         |
+| @Template      | MethodDecorator | string     | Template file path                 |
+| @Middleware    | MethodDecorator | number     | Middleware execution priority      |
+| @ErrorHandlder | MethodDecorator | undefined  |                                    |
 
 ### Context
 
@@ -223,3 +266,7 @@ Body parsing methods: `text()`, `json()`, `form()`, `blob()`, `buffer()`.
 | setCookie  | Cookie            | void   | Refer to https://deno.land/std@0.128.0/http/cookie.ts |
 | redirect   | url[, status]     | void   | Default status code is 301 (permanent redirect).      |
 | throw      | message[, status] | void   | Default status code is 500.                           |
+
+## Examples
+
+See https://github.com/seatwork/deno-cross/tree/master/examples
