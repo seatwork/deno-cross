@@ -1,5 +1,6 @@
 import type { Option, Route, Callback } from "./types.ts";
 import { Server } from "./server.ts";
+import { Method } from "./constant.ts";
 
 /**
  * The core method to start Cross framework
@@ -12,7 +13,7 @@ export const Cross = (
 ) => {
 
     if (typeof arg === 'function') {
-        routes.push({ method: "ALL", path: "/*", callback: arg });
+        routes.push({ method: Method.ALL, path: "/*", callback: arg });
         return new Server({}, routes);
     }
 
