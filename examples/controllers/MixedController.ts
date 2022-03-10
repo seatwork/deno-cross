@@ -1,4 +1,4 @@
-import { Controller, Context, Engine, Get, ErrorHandlder, Post, Middleware } from "../../mod.ts";
+import { Controller, Context, Get, ErrorHandlder, Post, Middleware } from "../../mod.ts";
 
 @Controller("/prefix")
 export class MixedController {
