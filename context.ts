@@ -13,7 +13,7 @@ export class Context {
     #response: { headers: Headers; status?: number; statusText?: string }
         = { headers: new Headers() };
 
-    #error: Error | undefined;
+    #error?: Error;
 
     // Creates new context for each request
     constructor(request: Request) {
