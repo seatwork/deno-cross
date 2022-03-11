@@ -4,7 +4,7 @@ A tiny and strong framework for deno web application.
 
 ## Get started
 
-```
+```ts
 import { Cross } from "https://deno.land/x/cross/mod.ts";
 ```
 
@@ -12,30 +12,30 @@ import { Cross } from "https://deno.land/x/cross/mod.ts";
 
 1. Handles all requests.
 
-```
-Cross(ctx => {
-    return ctx.path;
+```ts
+Cross((ctx) => {
+  return ctx.path;
 });
 ```
 
 2. Creates quick routes.
 
-```
+```ts
 import { Cross, get, post } from "https://deno.land/x/cross/mod.ts";
 
 Cross(
-    get("/:user", ctx => {
-        return ctx.params;
-    }),
-    post("/:user", ctx => {
-        return ctx.params;
-    })
+  get("/:user", (ctx) => {
+    return ctx.params;
+  }),
+  post("/:user", (ctx) => {
+    return ctx.params;
+  }),
 );
 ```
 
 3. Starts with options.
 
-```
+```ts
 import { Cross, get, post } from "https://deno.land/x/cross/mod.ts";
 
 Cross({
@@ -62,26 +62,26 @@ switch to decorator mode. The only difference in performance between the
 shortcut mode and the decorator mode is that the latter needs to scan and load
 all decorators at startup, it is almost the same in runtime.
 
-```
+```ts
 // index.ts
 import { Cross } from "https://deno.land/x/cross/mod.ts";
 
 // If no options, the empty {} is necessary
-Cross({})
+Cross({});
 ```
 
 #### 1. Controller
 
-```
+```ts
 // controller.ts
-import { Controller, Get, Context } from "https://deno.land/x/cross/mod.ts";
+import { Context, Controller, Get } from "https://deno.land/x/cross/mod.ts";
 
 @Controller("/prefix")
 export class MyController {
-    @Get("/:user")
-    user(ctx: Context) {
-        return ctx.params;
-    }
+  @Get("/:user")
+  user(ctx: Context) {
+    return ctx.params;
+  }
 }
 ```
 
@@ -90,19 +90,19 @@ export class MyController {
 You can add middleware decorator on any class method, including controllers. The
 role of the middleware parameter is to set the execution priority.
 
-```
+```ts
 // middleware.ts
-import { Middleware, Context } from "https://deno.land/x/cross/mod.ts";
+import { Context, Middleware } from "https://deno.land/x/cross/mod.ts";
 
 export class MyMiddleware {
-    @Middleware(2)
-    cors(ctx: Context) {
-        // todo something second
-    }
-    @Middleware(1)
-    auth(ctx: Context) {
-        // todo something first
-    }
+  @Middleware(2)
+  cors(ctx: Context) {
+    // todo something second
+  }
+  @Middleware(1)
+  auth(ctx: Context) {
+    // todo something first
+  }
 }
 ```
 
@@ -111,21 +111,21 @@ export class MyMiddleware {
 Plugin decorators can only be added to classes, and the parameter is the name
 bound to the context.
 
-```
+```ts
 // plugin.ts
 import { Plugin } from "https://deno.land/x/cross/mod.ts";
 
 @Plugin("redis")
 export class Redis {
-    constructor() {
-        // connect to redis server and create a client
-    }
-    get(key) {
-        // todo something
-    }
-    set(key, value) {
-        // todo something
-    }
+  constructor() {
+    // connect to redis server and create a client
+  }
+  get(key) {
+    // todo something
+  }
+  set(key, value) {
+    // todo something
+  }
 }
 ```
 
@@ -138,16 +138,15 @@ Define one and only one engine decorator that can render templates file with
 specific data. The parameter of this decorator is the core method of rendering
 the template, it accepts two parameters: template file path and rendering data.
 
-```
+```ts
 // engine.ts
 import { Engine } from "https://deno.land/x/cross/mod.ts";
 
 @Engine("render")
 export class MyEngine {
-
-    render(tmplFile, data) {
-        // return html string
-    }
+  render(tmplFile, data) {
+    // return html string
+  }
 }
 ```
 
@@ -157,18 +156,22 @@ Template decorator is used to decorate controller handlers, the parameters is
 template file path. Note that if you don't define any template engine, this
 decorator will throw an error.
 
-```
+```ts
 // controller.ts
-import { Controller, Template, Get, Context } from "https://deno.land/x/cross/mod.ts";
+import {
+  Context,
+  Controller,
+  Get,
+  Template,
+} from "https://deno.land/x/cross/mod.ts";
 
 @Controller("/prefix")
 export class MyController {
-
-    @Get("/:user")
-    @Template("index.tmpl")
-    user(ctx: Context) {
-        return ctx.params;
-    }
+  @Get("/:user")
+  @Template("index.tmpl")
+  user(ctx: Context) {
+    return ctx.params;
+  }
 }
 ```
 
@@ -178,15 +181,15 @@ If an error handler decorator is defined, all errors within the framework will
 be handled by it. Like middleware, you can define it in any class method but
 only once. This decorator has no parameters.
 
-```
+```ts
 // error.ts
-import { ErrorHandler, Context } from "https://deno.land/x/cross/mod.ts";
+import { Context, ErrorHandler } from "https://deno.land/x/cross/mod.ts";
 
 export class AnyClass {
-    @ErrorHandler
-    error(ctx: Context) {
-        console.log(ctx.error)
-    }
+  @ErrorHandler
+  error(ctx: Context) {
+    console.log(ctx.error);
+  }
 }
 ```
 
