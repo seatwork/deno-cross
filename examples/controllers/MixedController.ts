@@ -26,4 +26,9 @@ export class MixedController {
         console.log("i am middleware 3", ctx.params);
     }
 
+    @Get("/redirect")
+    redirect(ctx: Context) {
+        ctx.redirect("https://baidu.com");
+    }
+
 }

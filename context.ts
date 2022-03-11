@@ -1,4 +1,5 @@
-import { Cookie, getCookies, setCookie } from "./deps.ts";
+import type { CookieOptions } from "./types.ts";
+import { Cookie, getCookies, setCookie, deleteCookie } from "./deps.ts";
 import { Exception } from "./exception.ts";
 
 /**
@@ -11,6 +12,7 @@ export class Context {
     #request: Request;
     #url: URL;
     #params: Record<string, string> = {};
+    #query: Record<string, string> = {};
 
     #response: { headers: Headers; status?: number; statusText?: string }
         = { headers: new Headers() };
@@ -24,7 +26,7 @@ export class Context {
 
         // Set query string parameters
         for (const [k, v] of this.#url.searchParams) {
-            this.#params[k] = v;
+            this.#query[k] = v;
         }
     }
 
@@ -40,12 +42,43 @@ export class Context {
         return this.#params;
     }
 
-    // Get the full url of request
-    get url() {
-        return this.#request.url;
+    // Get querystring parameters
+    get query() {
+        return this.#query;
     }
 
-    // Get the context path of request
+    // Get the full href of the request
+    // ex. https://example.com:3000/users?page=1
+    get url() {
+        return this.#request.url; // the same as this.#url.href
+    }
+
+    // ex. https://example.com:3000
+    get origin() {
+        return this.#url.origin;
+    }
+
+    // ex. https:
+    get protocol() {
+        return this.#url.protocol;
+    }
+
+    // ex. example.com:3000
+    get host() {
+        return this.#url.host;
+    }
+
+    // ex. example.com
+    get hostname() {
+        return this.#url.hostname;
+    }
+
+    // ex. 3000
+    get port() {
+        return this.#url.port;
+    }
+
+    // ex. /users
     get path() {
         return this.#url.pathname;
     }
@@ -58,11 +91,6 @@ export class Context {
     // Get request headers. Usage: ctx.headers.get(key)
     get headers() {
         return this.#request.headers;
-    }
-
-    // Get request cookies. Usage: ctx.cookies[key]
-    get cookies() {
-        return getCookies(this.#request.headers);
     }
 
     // Get parsing methods for request body
@@ -82,63 +110,95 @@ export class Context {
 
     // RESPONSE PART ////////////////////////////////////////////////
 
+    get status() {
+        return this.#response.status || 0;
+    }
+
     set status(status: number) {
         this.#response.status = status;
+    }
+
+    get statusText() {
+        return this.#response.statusText || "";
     }
 
     set statusText(statusText: string) {
         this.#response.statusText = statusText;
     }
 
-    setHeader(key: string, value: string) {
-        this.#response.headers.set(key, value);
+    // The following 5 methods are used to manipulate response headers
+    has(name: string) {
+        return this.#response.headers.has(name);
     }
 
-    setHeaders(headers: Record<string, string>) {
-        Object.keys(headers).forEach(key => {
-            this.#response.headers.set(key, headers[key]);
-        });
+    get(name: string) {
+        return name ? this.#response.headers.get(name) : this.#response.headers;
     }
 
-    setContentType(value: string, charset?: string) {
-        if (!this.#response.headers.has("content-type")) {
-            if (charset) value += ";charset=" + charset;
-            this.setHeader("Content-Type", value);
-        }
+    set(name: string, value: string) {
+        this.#response.headers.set(name, value);
     }
 
-    setCookie(cookie: Cookie) {
-        setCookie(this.#response.headers, cookie);
+    append(name: string, value: string) {
+        this.#response.headers.append(name, value);
+    }
+
+    delete(name: string) {
+        this.#response.headers.delete(name);
     }
 
     // Permanent redirect codes: 301 (default), 308
     // Temporary redirect codes: 302，303，307
     redirect(url: string, status: 301 | 302 | 303 | 307 | 308 = 301) {
         this.#response.status = status;
-        this.#response.headers.set("Location", url);
+        this.set("Location", url);
     }
 
     // Build the response object
     // BodyInit: Blob, BufferSource, FormData, ReadableStream, URLSearchParams, or USVString
     build(body: BodyInit) {
+        let contentType: string | undefined;
         if (body === undefined || body === null) {
-            this.status = 204;
+            if (!this.status) this.status = 204;
 
         } else if (typeof body === "string") {
-            /^\s*</.test(body) ?
-                this.setContentType("text/html", "utf-8") :
-                this.setContentType("text/plain", "utf-8");
+            contentType = /^\s*</.test(body) ? "text/html" : "text/plain";
 
         } else if (!(body instanceof Blob) && !(body instanceof Uint8Array)
             && !(body instanceof FormData) && !(body instanceof ReadableStream)
             && !(body instanceof URLSearchParams)) {
-            this.setContentType("application/json", "utf-8");
+            contentType = "application/json";
             body = JSON.stringify(body);
+        }
+
+        if (contentType && !this.has("content-type")) {
+            this.set("content-type", `${contentType};charset=utf-8`);
         }
         return new Response(body, this.#response);
     }
 
-    // SHORTCUTS ////////////////////////////////////////////////////
+    // COMMON PART //////////////////////////////////////////////////
+
+    // Operate cookies. Usage: ctx.cookies.get(name)
+    get cookies() {
+        const reqHeaders = this.#request.headers;
+        const resHeaders = this.#response.headers;
+
+        return {
+            get(name?: string) {
+                const cookies = getCookies(reqHeaders);
+                return name ? cookies[name] : cookies;
+            },
+            set(name: string, value: string, options?: CookieOptions) {
+                const cookie = { name, value };
+                Object.assign(cookie, options);
+                setCookie(resHeaders, cookie);
+            },
+            delete(name: string, attributes?: { path?: string; domain?: string }) {
+                deleteCookie(resHeaders, name, attributes);
+            }
+        }
+    }
 
     set error(e: Exception | undefined) {
         this.#error = e;

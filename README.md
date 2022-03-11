@@ -198,14 +198,10 @@ export class AnyClass {
 ### Instance
 
 To start the web service, you simply call one method `Cross({})`. Note that not
-new an instance.
+new an instance. The options as follow:
 
-#### Options
-
-| name   | type   | required | description                                      |
-| ------ | ------ | -------- | ------------------------------------------------ |
-| assets | string | false    | The relative path of static resources directory. |
-| port   | number | false    | HTTP server listening port, default 3000.        |
+- `assets` The relative path of static resources directory.
+- `port` HTTP server listening port, default 3000.
 
 ### Shortcuts
 
@@ -213,12 +209,8 @@ The shortcut methods including
 `all`,`get`,`post`,`put`,`del`,`patch`,`head`,`opt`, and all methods have the
 same parameters.
 
-#### Parameters
-
-| name     | type     | required | description                     |
-| -------- | -------- | -------- | ------------------------------- |
-| path     | string   | false    | Route path based on radix tree. |
-| callback | function | false    | Request handler with context.   |
+- `path` Route path based on radix tree.
+- `callback` Request handle function.
 
 ### Decorators
 
@@ -244,31 +236,46 @@ same parameters.
 Context is an instance passed to controllers, middlewares and error handler, it
 contains properties and methods related to requests and responses.
 
-#### Properties
+#### Request Properties
 
-| name       | type    | readonly | description                                           |
-| ---------- | ------- | -------- | ----------------------------------------------------- |
-| path       | string  | true     | The context path of request.                          |
-| url        | string  | true     | The full url of request.                              |
-| method     | string  | true     | The request method.                                   |
-| headers    | Headers | true     | Refer to https://deno.com/deploy/docs/runtime-headers |
-| cookies    | object  | true     | The request cookies.                                  |
-| params     | object  | true     | Parameters in route path and query string.            |
-| body       | object  | true     | Contains five promised methods to parse request body  |
-| status     | number  | false    | Sets HTTP status code.                                |
-| statusText | string  | false    | Sets HTTP status text.                                |
+- `ctx.params` The parameters with route path
+- `ctx.query` The parameters with query string
+- `ctx.url` ex. https://example.com:3000/users?page=1
+- `ctx.origin` ex. https://example.com:3000
+- `ctx.protocol` ex. https:
+- `ctx.host` ex. example.com:3000
+- `ctx.hostname` ex. example.com
+- `ctx.port` ex. 3000
+- `ctx.path` ex. /users
+- `ctx.method` Standard http request methods
+- `ctx.headers` Refer to https://deno.com/deploy/docs/runtime-headers
+- `ctx.cookies` Including one method to get request cookie:
+  `ctx.cookies.get(name)`
+- `ctx.body` Including five parsing methods: `text()`, `json()`, `form()`,
+  `blob()`, `buffer()`.
 
-Body parsing methods: `text()`, `json()`, `form()`, `blob()`, `buffer()`.
+#### Response Properties
 
-#### Methods
+- `ctx.status`
+- `ctx.status=`
+- `ctx.statusText`
+- `ctx.statusText=`
+- `ctx.cookies` Including two methods to operate response cookie:
+  `set(name, value)`,`delete(name)`
 
-| name       | parameters        | return | description                                           |
-| ---------- | ----------------- | ------ | ----------------------------------------------------- |
-| setHeader  | key, value        | void   | Sets response header.                                 |
-| setHeaders | {key, value}      | void   | Sets response headers.                                |
-| setCookie  | Cookie            | void   | Refer to https://deno.land/std@0.128.0/http/cookie.ts |
-| redirect   | url[, status]     | void   | Default status code is 301 (permanent redirect).      |
-| throw      | message[, status] | void   | Default status code is 500.                           |
+#### Response Methods
+
+- `ctx.has(name)`
+- `ctx.get(name)`
+- `ctx.set(name, value)`
+- `ctx.append(name, value)`
+- `ctx.delete(name)`
+- `ctx.redirect(url[, status])`
+
+#### Others
+
+- `ctx.error`
+- `ctx.throw(message[, status])`
 
 ## Examples
 
