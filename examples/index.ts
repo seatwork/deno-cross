@@ -1,9 +1,9 @@
 import { Cross, get } from "../mod.ts";
 
-const app = new Cross(
+new Cross(
     // get("/abc", () => {
     //     return "shortcut abc";
     // })
-);
-app.assets("/assets");
-app.listen(3333);
+)
+    .assets("/assets")
+    .listen();
