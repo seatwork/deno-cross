@@ -226,6 +226,7 @@ contains properties and methods related to requests and responses.
   `ctx.cookies.get(name)`
 - `ctx.body` Including five parsing methods: `text()`, `json()`, `form()`,
   `blob()`, `buffer()`.
+- `ctx.request` Native request instance.
 
 #### Response Properties
 
@@ -249,6 +250,12 @@ contains properties and methods related to requests and responses.
 
 - `ctx.error`
 - `ctx.throw(message[, status])`
+
+#### Return types
+
+- `BodyInit`: Blob, BufferSource, FormData, ReadableStream, URLSearchParams, or
+  USVString
+- `Response`: Native response instance.
 
 ## Examples
 

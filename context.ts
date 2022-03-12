@@ -108,6 +108,11 @@ export class Context {
         }
     }
 
+    // Get native request instance
+    get request() {
+        return this.#request;
+    }
+
     // RESPONSE PART ////////////////////////////////////////////////
 
     get status() {
@@ -156,7 +161,11 @@ export class Context {
 
     // Build the response object
     // BodyInit: Blob, BufferSource, FormData, ReadableStream, URLSearchParams, or USVString
-    build(body: BodyInit) {
+    build(body: BodyInit | Response) {
+        if (body instanceof Response) {
+            return body; // it's a complete native response
+        }
+
         let contentType: string | undefined;
         if (body === undefined || body === null) {
             if (!this.status) this.status = 204;
