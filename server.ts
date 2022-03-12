@@ -11,6 +11,7 @@ import { Method, Mime, HttpStatus } from "./constant.ts";
 export class Server {
 
     #router = new Router();
+    #maxAge: number = 3600 * 24 * 7; // Cache-Control 7days
 
     /**
      * Create an instance
@@ -49,14 +50,18 @@ export class Server {
      * Set static resource directory path
      * All files under this path are directly accessible
      * @param dir
+     * @param maxAge in seconds
      */
-    assets(dir: string) {
+    assets(dir: string, maxAge?: number) {
         // Add static route
         this.#router.add({
             method: Method.GET,
             path: join('/', dir, '*'),
-            callback: this.#handleAssets
+            callback: this.#handleAssets.bind(this)
         });
+        if (maxAge) {
+            this.#maxAge = maxAge;
+        }
         return this;
     }
 
@@ -132,7 +137,22 @@ export class Server {
             if (mime) {
                 ctx.set('Content-Type', mime);
             }
-            return Deno.readFileSync(file);
+            if (!stat.mtime) {
+                return Deno.readFileSync(file);
+            }
+
+            // Handling 304 status with negotiation cache
+            // if-modified-since and Last-Modified
+            // In the new standard, replace "expires" in Cache-Control with "max-age"
+            const lastModified = stat.mtime.toUTCString();
+            if (ctx.headers.get("if-modified-since") == lastModified) {
+                ctx.status = 304;
+                ctx.statusText = "Not Modified";
+            } else {
+                ctx.set("Last-Modified", lastModified);
+                ctx.set("Cache-Control", "max-age=" + this.#maxAge);
+                return Deno.readFileSync(file);
+            }
         } catch (e) {
             if (e instanceof Deno.errors.NotFound) {
                 ctx.throw("File not found", HttpStatus.NOT_FOUND);
