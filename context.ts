@@ -1,5 +1,5 @@
 import type { CookieOptions } from "./types.ts";
-import { Cookie, getCookies, setCookie, deleteCookie } from "./deps.ts";
+import { getCookies, setCookie, deleteCookie } from "./deps.ts";
 import { Exception } from "./exception.ts";
 
 /**
