@@ -1,4 +1,4 @@
-import type { Option, Route } from "./types.ts";
+import type { Route } from "./types.ts";
 import { serve, join, resolve, extname, walkSync } from "./deps.ts";
 import { Context } from "./context.ts";
 import { Router } from "./router.ts";
@@ -11,29 +11,23 @@ import { Method, Mime, HttpStatus } from "./constant.ts";
 export class Server {
 
     #router = new Router();
-    #time = Date.now();
 
     /**
-     * Construct and start server
-     * @param options { assets, port }
+     * Create an instance
+     * Which routes are loaded depends on whether there are arguments
      * @param routes Route[]
      * @returns
      */
-    constructor(options: Option, routes: Route[]) {
-        const assets = options.assets;
-        const port = options.port;
-
-        // Run SHORTCUT MODE if routes exist
-        // No need to scan to load decorator classes
+    constructor(...routes: Route[]) {
         if (routes.length > 0) {
-            this.#loadRoutes(routes, assets);
-            this.#run(port);
+            // Run SHORTCUT MODE if arguments exist
+            // No need to scan to load decorator classes
+            this.#loadRoutes(routes);
         } else {
-            // Run DECORATOR MODE if routes not exist
+            // Run DECORATOR MODE if arguments not exist
             this.#loadClasses().then(() => {
                 Metadata.compose();
-                this.#loadRoutes(Metadata.routes, assets);
-                this.#run(port);
+                this.#loadRoutes(Metadata.routes);
             });
         }
     }
@@ -42,14 +36,36 @@ export class Server {
      * Start HTTP server
      * @param port default 3000
      */
-    #run(port?: number) {
+    listen(port?: number) {
         port = port || 3000;
-        serve((request: Request) => this.#dispatch(request), { port });
+        serve((request: Request) => this.#handleRequest(request), { port });
 
         console.log(`\x1b[90m[Cross] ${this.#version()}\x1b[0m`);
         console.log(`\x1b[90m[Cross] Reference: https://deno.land/x/cross\x1b[0m`);
         console.log(`[Cross] Server is running at \x1b[4m\x1b[36mhttp://localhost:${port}\x1b[0m`);
-        console.log("[Cross] Elapsed time:", Date.now() - this.#time, "ms");
+    }
+
+    /**
+     * Set static resource directory path
+     * All files under this path are directly accessible
+     * @param dir
+     */
+    assets(dir: string) {
+        // Add static route
+        this.#router.add({
+            method: Method.GET,
+            path: join('/', dir, '*'),
+            callback: this.#handleAssets
+        });
+        return this;
+    }
+
+    /**
+     * Exports the core method for handling requests
+     * Used to undertake requests for third-party http services
+     */
+    get dispatch() {
+        return this.#handleRequest.bind(this);
     }
 
     /**
@@ -57,7 +73,8 @@ export class Server {
      * @param request
      * @returns
      */
-    async #dispatch(request: Request): Promise<Response> {
+    async #handleRequest(request: Request): Promise<Response> {
+        const time = Date.now();
         const ctx = new Context(request);
         Object.assign(ctx, Metadata.plugins);
 
@@ -94,17 +111,8 @@ export class Server {
                 body = e.message || "Internal Server Error";
             }
         }
+        ctx.set("x-response-time", (Date.now() - time) + "ms");
         return ctx.build(body);
-    }
-
-    /**
-     * Call middlewares by priority
-     * @param ctx
-     */
-    async #callMiddlewares(ctx: Context) {
-        for (const middleware of Metadata.middlewares) {
-            await middleware.callback(ctx);
-        }
     }
 
     /**
@@ -120,9 +128,9 @@ export class Server {
             if (stat.isDirectory) {
                 ctx.throw("Path is a directory", HttpStatus.NOT_ACCEPTABLE);
             }
-            const ext = Mime[extname(file)];
-            if (ext) {
-                ctx.setHeader('Content-Type', ext);
+            const mime = Mime[extname(file)];
+            if (mime) {
+                ctx.set('Content-Type', mime);
             }
             return Deno.readFileSync(file);
         } catch (e) {
@@ -135,23 +143,22 @@ export class Server {
     }
 
     /**
+     * Call middlewares by priority
+     * @param ctx
+     */
+    async #callMiddlewares(ctx: Context) {
+        for (const middleware of Metadata.middlewares) {
+            await middleware.callback(ctx);
+        }
+    }
+
+    /**
      * Initialize the router
      * @param routes Route[]
-     * @param assets Relative path of assets directory
      */
-    #loadRoutes(routes: Route[], assets?: string) {
+    #loadRoutes(routes: Route[]) {
         // Add dynamic routes
         routes.forEach(route => this.#router.add(route));
-
-        // Add static routes
-        // All files under this path are directly accessible
-        if (assets) {
-            this.#router.add({
-                method: Method.GET,
-                path: join('/', assets, '*'),
-                callback: this.#handleAssets
-            });
-        }
     }
 
     /**

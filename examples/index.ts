@@ -1,6 +1,9 @@
-import { Cross } from "../mod.ts";
+import { Cross, get } from "../mod.ts";
 
-Cross({
-    assets: "/assets",
-    port: 3000
-});
+const app = new Cross(
+    // get("/abc", () => {
+    //     return "shortcut abc";
+    // })
+);
+app.assets("/assets");
+app.listen(3333);

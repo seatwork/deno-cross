@@ -29,12 +29,6 @@ export type Middleware = {
     callback: Callback;
 }
 
-// Startup options
-export type Option = {
-    assets?: string; // Static resource directory path
-    port?: number;   // Server listening port
-}
-
 // Cookie options
 export type CookieOptions = {
     /** Expiration date of the cookie. */
