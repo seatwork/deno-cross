@@ -10,45 +10,17 @@ import { Cross } from "https://deno.land/x/cross/mod.ts";
 
 ### Shortcut mode
 
-1. Handles all requests.
-
-```ts
-Cross((ctx) => {
-  return ctx.path;
-});
-```
-
-2. Creates quick routes.
-
 ```ts
 import { Cross, get, post } from "https://deno.land/x/cross/mod.ts";
 
-Cross(
+new Cross(
   get("/:user", (ctx) => {
     return ctx.params;
   }),
   post("/:user", (ctx) => {
     return ctx.params;
   }),
-);
-```
-
-3. Starts with options.
-
-```ts
-import { Cross, get, post } from "https://deno.land/x/cross/mod.ts";
-
-Cross({
-        assets: "/static/dir/path",
-        port: 3000
-    }
-    get("/:user", ctx => {
-        return ctx.params;
-    }),
-    post("/:user", ctx => {
-        return ctx.params;
-    })
-);
+).listen();
 ```
 
 Note that features such as plugins, middlewares,template engine and unified
@@ -57,7 +29,7 @@ ways.
 
 ### Decorator mode
 
-If no route is set in the startup parameters, the framework will automatically
+If no route is set in the startup arguments, the framework will automatically
 switch to decorator mode. The only difference in performance between the
 shortcut mode and the decorator mode is that the latter needs to scan and load
 all decorators at startup, it is almost the same in runtime.
@@ -66,8 +38,7 @@ all decorators at startup, it is almost the same in runtime.
 // index.ts
 import { Cross } from "https://deno.land/x/cross/mod.ts";
 
-// If no options, the empty {} is necessary
-Cross({});
+new Cross().listen();
 ```
 
 #### 1. Controller
@@ -195,13 +166,13 @@ export class AnyClass {
 
 ## API Reference
 
-### Instance
+### Constructor
 
-To start the web service, you simply call one method `Cross({})`. Note that not
-new an instance. The options as follow:
+To start the web service, you simply new an instance with `new Cross()`. The
+instance has two public methods as follow:
 
-- `assets` The relative path of static resources directory.
-- `port` HTTP server listening port, default 3000.
+- `assets(dir)` "dir" is the relative path of static resources directory.
+- `listen(port)` HTTP server listening port, default 3000.
 
 ### Shortcuts
 
