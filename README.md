@@ -124,8 +124,9 @@ export class MyEngine {
 #### 5. Template
 
 Template decorator is used to decorate controller handlers, the parameters is
-template file path. Note that if you don't define any template engine, this
-decorator will throw an error.
+template file path. If no engine is defined, the built-in engine will be used
+for rendering automatically, The built-in engine is based on the typescript
+version of doT. For usage see: https://olado.github.io/doT/index.html
 
 ```ts
 // controller.ts
