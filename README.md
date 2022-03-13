@@ -249,6 +249,7 @@ contains properties and methods related to requests and responses.
 
 #### Others
 
+- `ctx.render(tmplPath, data)`
 - `ctx.error`
 - `ctx.throw(message[, status])`
 

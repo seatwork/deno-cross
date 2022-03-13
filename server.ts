@@ -90,12 +90,12 @@ export class Server {
 
             if (route) {
                 ctx.params = route.params || {};
+                ctx.render = Metadata.engineRender || this.#engine.render.bind(this.#engine);
+
                 await this.#callMiddlewares(ctx);
                 body = await route.callback(ctx);
-
                 if (route.template) {
-                    const render = Metadata.engineRender || this.#engine.render.bind(this.#engine);
-                    body = await render(route.template, body);
+                    body = await ctx.render(route.template, body);
                 }
             } else {
                 ctx.throw("Route not found", HttpStatus.NOT_FOUND);
