@@ -57,9 +57,6 @@ export const Mime: Record<string, string> = {
 // Route callback function of the controller
 export type Callback = (ctx: Context) => void;
 
-// Render function of the template engine
-export type Renderer = (tmplFile: string, data: unknown) => string;
-
 // Decorator type
 export type Decorator = {
     type: "class" | "method";

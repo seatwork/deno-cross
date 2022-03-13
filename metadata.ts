@@ -1,5 +1,6 @@
 import { Reflect, join, resolve, walkSync } from "./deps.ts";
-import { Decorator, Middleware, Route, Renderer, Callback, HttpError } from "./defs.ts";
+import { Decorator, Middleware, Route, Callback, HttpError } from "./defs.ts";
+import { BaseEngine } from "./base_engine.ts";
 
 /**
  * Global reflect metadata cache for decorator constructors
@@ -10,10 +11,10 @@ export class Metadata {
     static #constructors: Set<any> = new Set();
 
     // All the global metadata at runtime
+    static engine?: BaseEngine;
     static plugins: Record<string, unknown> = {};
     static middlewares: Middleware[] = [];
     static routes: Route[] = [];
-    static engineRender?: Renderer;
     static errorHandler?: Callback;
 
     /**
@@ -72,12 +73,14 @@ export class Metadata {
 
             for (const decorator of classDecorators) {
                 // Parse engine decorator (only one gloal engine is allowed)
-                if (decorator.name === "Engine" && decorator.value) {
-                    if (this.engineRender) {
-                        throw new HttpError("Duplicated engine renderer");
+                if (decorator.name === "Engine") {
+                    if (this.engine) {
+                        throw new HttpError("Duplicated template engine");
                     }
-                    // "value" is the name of render method
-                    this.engineRender = instance[decorator.value].bind(instance);
+                    if (!(instance instanceof BaseEngine)) {
+                        throw new HttpError("Custome template engine must inherit 'Engine' class");
+                    }
+                    this.engine = instance;
                     continue;
                 }
 
@@ -154,10 +157,10 @@ export class Metadata {
     }
 
     static printResult() {
+        console.log("engine:", Metadata.engine)
         console.log("plugins:", Metadata.plugins)
         console.log("middlewares:", Metadata.middlewares)
         console.log("routes:", Metadata.routes)
-        console.log("engineRender:", Metadata.engineRender)
         console.log("errorHandler:", Metadata.errorHandler)
     }
 

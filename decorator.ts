@@ -81,13 +81,12 @@ export const Plugin = (name: string): ClassDecorator => {
 
 /**
  * Engine decorator
- * @param renderer render method name
  * @returns
  */
-export const Engine = (renderer: string): ClassDecorator => {
+export const Engine = (): ClassDecorator => {
     return (constructor) => {
         Metadata.append(constructor, {
-            type: "class", name: "Engine", value: renderer
+            type: "class", name: "Engine"
         });
     }
 }

@@ -2,7 +2,7 @@ import { serve, join, resolve, extname } from "./deps.ts";
 import { Route, Method, Mime, HttpStatus } from "./defs.ts";
 import { Context } from "./context.ts";
 import { Router } from "./router.ts";
-import { Engine } from "./engine.ts";
+import { BaseEngine } from "./base_engine.ts";
 import { Metadata } from "./metadata.ts";
 
 /**
@@ -11,7 +11,7 @@ import { Metadata } from "./metadata.ts";
 export class Server {
 
     #router = new Router();
-    #engine = new Engine();
+    #baseEngine = new BaseEngine();
     #maxAge: number = 3600 * 24 * 7; // Cache-Control 7days
 
     /**
@@ -89,13 +89,15 @@ export class Server {
                 || this.#router.find(Method.ALL, ctx.path);
 
             if (route) {
+                const engine = Metadata.engine || this.#baseEngine;
+                ctx.view = engine.view.bind(engine);
+                ctx.render = engine.render.bind(engine);
                 ctx.params = route.params || {};
-                ctx.render = Metadata.engineRender || this.#engine.render.bind(this.#engine);
 
                 await this.#callMiddlewares(ctx);
                 body = await route.callback(ctx);
                 if (route.template) {
-                    body = await ctx.render(route.template, body);
+                    body = await ctx.view(route.template, body);
                 }
             } else {
                 ctx.throw("Route not found", HttpStatus.NOT_FOUND);

@@ -1,9 +1,9 @@
-import { Engine } from "../../mod.ts";
+import { Engine, BaseEngine } from "../../mod.ts";
 
-// @Engine("render")
-export class TinyEngine {
+@Engine()
+export class TinyEngine extends BaseEngine {
 
-    render(tmpl: string, data: any) {
+    view(tmpl: string, data: any) {
         console.log("i am template engine", tmpl, data);
         const name = "tester";
         this.#test();

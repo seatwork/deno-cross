@@ -106,16 +106,21 @@ Then you can use redis object as singleton instance in any controllers with
 #### 4. Engine
 
 Define one and only one engine decorator that can render templates file with
-specific data. The parameter of this decorator is the core method of rendering
-the template, it accepts two parameters: template file path and rendering data.
+specific data. The custom engine must inherit the base engine and override its
+methods
 
 ```ts
-// engine.ts
-import { Engine } from "https://deno.land/x/cross/mod.ts";
+// custom_engine.ts
+import { BaseEngine, Engine } from "https://deno.land/x/cross/mod.ts";
 
-@Engine("render")
-export class MyEngine {
-  render(tmplFile, data) {
+@Engine()
+export class MyEngine extends BaseEngine {
+  // Override (required)
+  view(tmplFile, data) {
+    // return html string
+  }
+  // Override (optional)
+  render(tmplText, data) {
     // return html string
   }
 }
@@ -249,7 +254,8 @@ contains properties and methods related to requests and responses.
 
 #### Others
 
-- `ctx.render(tmplPath, data)`
+- `ctx.view(tmplPath, data)`
+- `ctx.render(tmplText, data)`
 - `ctx.error`
 - `ctx.throw(message[, status])`
 
