@@ -1,4 +1,4 @@
-import type { Route, Callback } from "./types.ts";
+import type { Route, Callback } from "./defs.ts";
 
 /**
  * Router object for adding and finding routes

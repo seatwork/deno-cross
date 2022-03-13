@@ -1,6 +1,5 @@
-import type { CookieOptions } from "./types.ts";
 import { getCookies, setCookie, deleteCookie } from "./deps.ts";
-import { Exception } from "./exception.ts";
+import { CookieOptions, HttpError } from "./defs.ts";
 
 /**
  * Application context (request and response)
@@ -17,7 +16,7 @@ export class Context {
     #response: { headers: Headers; status?: number; statusText?: string }
         = { headers: new Headers() };
 
-    #error?: Exception;
+    #error?: HttpError;
 
     // Creates new context for each request
     constructor(request: Request) {
@@ -209,7 +208,7 @@ export class Context {
         }
     }
 
-    set error(e: Exception | undefined) {
+    set error(e: HttpError | undefined) {
         this.#error = e;
     }
 
@@ -218,7 +217,7 @@ export class Context {
     }
 
     throw(message: string, status?: number) {
-        throw new Exception(message, status);
+        throw new HttpError(message, status);
     }
 
 }

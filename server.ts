@@ -1,9 +1,8 @@
-import type { Route } from "./types.ts";
-import { serve, join, resolve, extname, walkSync } from "./deps.ts";
+import { serve, join, resolve, extname } from "./deps.ts";
+import { Route, Method, Mime, HttpStatus } from "./defs.ts";
 import { Context } from "./context.ts";
 import { Router } from "./router.ts";
 import { Metadata } from "./metadata.ts";
-import { Method, Mime, HttpStatus } from "./constant.ts";
 
 /**
  * HTTP Server
@@ -26,8 +25,7 @@ export class Server {
             this.#loadRoutes(routes);
         } else {
             // Run DECORATOR MODE if arguments not exist
-            this.#loadClasses().then(() => {
-                Metadata.compose();
+            Metadata.loadClasses().then(() => {
                 this.#loadRoutes(Metadata.routes);
             });
         }
@@ -179,18 +177,6 @@ export class Server {
     #loadRoutes(routes: Route[]) {
         // Add dynamic routes
         routes.forEach(route => this.#router.add(route));
-    }
-
-    /**
-     * Loads (imports) all .ts files under the current project
-     * to trigger the decorators
-     */
-    async #loadClasses(): Promise<void> {
-        for (const entry of walkSync(resolve())) {
-            if (entry.isFile && entry.name.endsWith('.ts')) {
-                await import(entry.path);
-            }
-        }
     }
 
     /**

@@ -1,6 +1,5 @@
-import type { Decorator, Middleware, Route, Renderer, Callback } from "./types.ts";
-import { Reflect, join } from "./deps.ts";
-import { Exception } from "./exception.ts";
+import { Reflect, join, resolve, walkSync } from "./deps.ts";
+import { Decorator, Middleware, Route, Renderer, Callback, HttpError } from "./defs.ts";
 
 /**
  * Global reflect metadata cache for decorator constructors
@@ -16,6 +15,20 @@ export class Metadata {
     static routes: Route[] = [];
     static engineRender?: Renderer;
     static errorHandler?: Callback;
+
+    /**
+     * Loads (imports) all .ts files under the current project
+     * to trigger the decorators
+     */
+    static async loadClasses(): Promise<void> {
+        for (const entry of walkSync(resolve())) {
+            if (entry.isFile && entry.name.endsWith('.ts')) {
+                await import(entry.path);
+            }
+        }
+        // Then parse all the decorators
+        this.#compose();
+    }
 
     /**
      * Append metadata to target constructor (called when the decorator is triggered)
@@ -47,7 +60,7 @@ export class Metadata {
     /**
      * Resolve all decorators
      */
-    static compose() {
+    static #compose() {
         // Get metadata from each constructor
         for (const c of this.#constructors) {
             // New an instance
@@ -61,7 +74,7 @@ export class Metadata {
                 // Parse engine decorator (only one gloal engine is allowed)
                 if (decorator.name === "Engine" && decorator.value) {
                     if (this.engineRender) {
-                        throw new Exception("Duplicated engine renderer");
+                        throw new HttpError("Duplicated engine renderer");
                     }
                     // "value" is the name of render method
                     this.engineRender = instance[decorator.value];
@@ -91,7 +104,7 @@ export class Metadata {
                 // Parse error handler
                 if (decorator.name === "ErrorHandlder") {
                     if (this.errorHandler) {
-                        throw new Exception("Duplicated error handler");
+                        throw new HttpError("Duplicated error handler");
                     }
                     this.errorHandler = callback;
                     continue;
@@ -111,7 +124,7 @@ export class Metadata {
 
                 // Parse routes such as GET, POST, PUT...
                 if (!controller) {
-                    throw new Exception("The class of route must be annotated with @Controller");
+                    throw new HttpError("The class of route must be annotated with @Controller");
                 }
 
                 // Find template decorator in the same method scope
