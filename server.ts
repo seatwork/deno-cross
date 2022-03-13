@@ -2,6 +2,7 @@ import { serve, join, resolve, extname } from "./deps.ts";
 import { Route, Method, Mime, HttpStatus } from "./defs.ts";
 import { Context } from "./context.ts";
 import { Router } from "./router.ts";
+import { Engine } from "./engine.ts";
 import { Metadata } from "./metadata.ts";
 
 /**
@@ -10,6 +11,7 @@ import { Metadata } from "./metadata.ts";
 export class Server {
 
     #router = new Router();
+    #engine = new Engine();
     #maxAge: number = 3600 * 24 * 7; // Cache-Control 7days
 
     /**
@@ -92,11 +94,8 @@ export class Server {
                 body = await route.callback(ctx);
 
                 if (route.template) {
-                    if (Metadata.engineRender) {
-                        body = await Metadata.engineRender(route.template, body);
-                    } else {
-                        ctx.throw("Template engine has not been configured", HttpStatus.INTERNAL_SERVER_ERROR);
-                    }
+                    const render = Metadata.engineRender || this.#engine.render.bind(this.#engine);
+                    body = await render(route.template, body);
                 }
             } else {
                 ctx.throw("Route not found", HttpStatus.NOT_FOUND);

@@ -47,9 +47,19 @@ export class SimpleController {
     }
 
     @Get("/tmpl")
-    @Template("index.html")
+    @Template("tmpl/test.html")
     hello3() {
-        return "i will be rendered";
+        return {
+            name: "world!",
+            hobbies: ["football", "basketball"],
+            family: {
+                wife: "Rose",
+                children: {
+                    sons: [],
+                    daughters: []
+                }
+            }
+        };
     }
 
     @Get("/image")

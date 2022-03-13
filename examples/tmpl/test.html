@@ -1,0 +1,8 @@
+<h1>name: {{= name }}</h1>
+<h1>family: {{= family.wife }}</h1>
+<h1>hobbies: </h1>
+<ul>
+  {{~ hobbies:value:index }}
+  <li>{{= index}} - {{= value }}</li>
+  {{~ }}
+</ul>

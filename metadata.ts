@@ -77,7 +77,7 @@ export class Metadata {
                         throw new HttpError("Duplicated engine renderer");
                     }
                     // "value" is the name of render method
-                    this.engineRender = instance[decorator.value];
+                    this.engineRender = instance[decorator.value].bind(instance);
                     continue;
                 }
 
@@ -99,7 +99,7 @@ export class Metadata {
 
             for (const decorators of group) for (const decorator of decorators) {
                 if (!decorator.fn) continue;
-                const callback = instance[decorator.fn];
+                const callback = instance[decorator.fn].bind(instance);
 
                 // Parse error handler
                 if (decorator.name === "ErrorHandlder") {
@@ -136,8 +136,7 @@ export class Metadata {
                 this.routes.push({
                     method: decorator.name,
                     path: join('/', prefix, path),
-                    callback: instance[decorator.fn],
-                    template
+                    callback, template
                 });
             }
         }
