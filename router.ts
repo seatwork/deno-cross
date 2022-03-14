@@ -1,3 +1,4 @@
+// deno-lint-ignore-file no-this-alias
 import type { Route, Callback } from "./defs.ts";
 
 /**
