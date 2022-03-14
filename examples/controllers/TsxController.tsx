@@ -65,6 +65,7 @@ export class TsxController {
     }
     // const a = ctx.renderJsx(<Homepage props={data} />);
     // console.log(a)
+    // return <div>1234</div>
     return <Homepage props={data} />;
   }
 
