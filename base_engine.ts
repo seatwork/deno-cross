@@ -4,6 +4,7 @@ import { dotts, resolve } from "./deps.ts";
 export class BaseEngine {
 
   // Cache the compiled template functions
+  // deno-lint-ignore ban-types
   #fnCache: Record<string, Function> = {};
 
   /**
@@ -12,6 +13,7 @@ export class BaseEngine {
    * @param data
    * @returns rendered html
    */
+  // deno-lint-ignore no-explicit-any
   view(path: string, data: any = {}) {
     path = path.replace(/^\/+/, '');
     let fn = this.#fnCache[path];
@@ -30,6 +32,7 @@ export class BaseEngine {
    * @param data
    * @returns rendered html
    */
+  // deno-lint-ignore no-explicit-any
   render(tmpl: string, data: any = {}) {
     // ignores the default argName "it"
     const fn = dotts.template(tmpl, { argName: Object.keys(data) });
