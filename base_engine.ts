@@ -14,12 +14,12 @@ export class BaseEngine {
    * @returns rendered html
    */
   // deno-lint-ignore no-explicit-any
-  view(path: string, data: any = {}) {
+  async view(path: string, data: any = {}) {
     path = path.replace(/^\/+/, '');
     let fn = this.#fnCache[path];
 
     if (!fn) {
-      const tmpl = Deno.readTextFileSync(resolve(path));
+      const tmpl = await Deno.readTextFile(resolve(path));
       fn = dotts.template(tmpl, { argName: Object.keys(data) });
       this.#fnCache[path] = fn;
     }

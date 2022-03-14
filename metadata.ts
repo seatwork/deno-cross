@@ -1,4 +1,4 @@
-import { Reflect, join, resolve, walkSync } from "./deps.ts";
+import { Reflect, join, resolve, walk } from "./deps.ts";
 import { Decorator, Middleware, Route, Callback, HttpError } from "./defs.ts";
 import { BaseEngine } from "./base_engine.ts";
 
@@ -23,7 +23,7 @@ export class Metadata {
      * to trigger the decorators
      */
     static async loadClasses(): Promise<void> {
-        for (const entry of walkSync(resolve())) {
+        for await (const entry of walk(resolve())) {
             if (entry.isFile && (entry.name.endsWith('.ts') || entry.name.endsWith('.tsx'))) {
                 await import(entry.path);
             }
