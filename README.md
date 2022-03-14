@@ -152,6 +152,29 @@ export class MyController {
 }
 ```
 
+#### 6. JSX
+
+```ts
+// controller.ts
+/** @jsx h */
+import { Context, Controller, Get, h } from "https://deno.land/x/cross/mod.ts";
+
+const Homepage = ({ props }: any) => (
+  <div>
+    <h1 style="color:blue">Hello, {props.name}</h1>
+  </div>
+);
+
+@Controller()
+export class JsxController {
+  @Get("/jsx")
+  jsx(ctx: Context) {
+    const data = { name: "jsx" };
+    return <Homepage props={data} />;
+  }
+}
+```
+
 #### 6. ErrorHandlder
 
 If an error handler decorator is defined, all errors within the framework will
@@ -256,6 +279,8 @@ contains properties and methods related to requests and responses.
 
 - `ctx.view(tmplPath, data)`
 - `ctx.render(tmplText, data)`
+- `ctx.renderJsx(node)` You can return node directly, which will be rendered by
+  the framework.
 - `ctx.error`
 - `ctx.throw(message[, status])`
 

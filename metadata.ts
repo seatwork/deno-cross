@@ -8,6 +8,7 @@ import { BaseEngine } from "./base_engine.ts";
 export class Metadata {
 
     // To avoid creating instance repeatedly, use "Set" to automatically deduplicate.
+    // deno-lint-ignore no-explicit-any
     static #constructors: Set<any> = new Set();
 
     // All the global metadata at runtime
@@ -23,7 +24,7 @@ export class Metadata {
      */
     static async loadClasses(): Promise<void> {
         for (const entry of walkSync(resolve())) {
-            if (entry.isFile && entry.name.endsWith('.ts')) {
+            if (entry.isFile && (entry.name.endsWith('.ts') || entry.name.endsWith('.tsx'))) {
                 await import(entry.path);
             }
         }
@@ -36,6 +37,7 @@ export class Metadata {
      * @param constructor
      * @param decorator
      */
+    // deno-lint-ignore no-explicit-any
     static append(constructor: any, decorator: Decorator) {
         this.#constructors.add(constructor);
 

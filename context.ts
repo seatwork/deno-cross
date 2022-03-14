@@ -6,6 +6,7 @@ import { CookieOptions, HttpError } from "./defs.ts";
  */
 export class Context {
 
+    // deno-lint-ignore no-explicit-any
     [index: string]: any; // Custom properties
 
     #request: Request;
@@ -165,7 +166,7 @@ export class Context {
             return body; // it's a complete native response
         }
 
-        let contentType: string | undefined;
+        let contentType = null;
         if (body === undefined || body === null) {
             if (!this.status) this.status = 204;
 
@@ -180,7 +181,7 @@ export class Context {
         }
 
         if (contentType && !this.has("content-type")) {
-            this.set("content-type", `${contentType};charset=utf-8`);
+            this.set("content-type", `${contentType}; charset=utf-8`);
         }
         return new Response(body, this.#response);
     }

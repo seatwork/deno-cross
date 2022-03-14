@@ -3,6 +3,7 @@ import { Route, Method, Mime, HttpStatus } from "./defs.ts";
 import { Context } from "./context.ts";
 import { Router } from "./router.ts";
 import { BaseEngine } from "./base_engine.ts";
+import { Node, renderJsx } from "./jsx.ts";
 import { Metadata } from "./metadata.ts";
 
 /**
@@ -92,12 +93,20 @@ export class Server {
                 const engine = Metadata.engine || this.#baseEngine;
                 ctx.view = engine.view.bind(engine);
                 ctx.render = engine.render.bind(engine);
+                ctx.renderJsx = renderJsx;
                 ctx.params = route.params || {};
 
                 await this.#callMiddlewares(ctx);
                 body = await route.callback(ctx);
+
                 if (route.template) {
                     body = await ctx.view(route.template, body);
+
+                } else if (body !== undefined && body !== null) {
+                    const node = body as Node; // JSX Node
+                    if (typeof node.tag === "function") {
+                        body = renderJsx(node);
+                    }
                 }
             } else {
                 ctx.throw("Route not found", HttpStatus.NOT_FOUND);
