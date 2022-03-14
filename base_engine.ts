@@ -1,5 +1,4 @@
 import { dotts, resolve } from "./deps.ts";
-const textDecode = (u: Uint8Array) => new TextDecoder().decode(u);
 
 // Built-in template engine with doT
 export class BaseEngine {
@@ -18,7 +17,7 @@ export class BaseEngine {
     let fn = this.#fnCache[path];
 
     if (!fn) {
-      const tmpl = textDecode(Deno.readFileSync(resolve(path)));
+      const tmpl = Deno.readTextFileSync(resolve(path));
       fn = dotts.template(tmpl, { argName: Object.keys(data) });
       this.#fnCache[path] = fn;
     }

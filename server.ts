@@ -133,11 +133,11 @@ export class Server {
      * @param ctx
      * @returns
      */
-    #handleAssets(ctx: Context) {
+    async #handleAssets(ctx: Context) {
         // Removes the leading slash and converts relative path to absolute path
         const file = resolve(ctx.path.replace(/^\/+/, ''));
         try {
-            const stat = Deno.statSync(file);
+            const stat = await Deno.stat(file);
             if (stat.isDirectory) {
                 ctx.throw("Path is a directory", HttpStatus.NOT_ACCEPTABLE);
             }
@@ -146,7 +146,7 @@ export class Server {
                 ctx.set('Content-Type', mime);
             }
             if (!stat.mtime) {
-                return Deno.readFileSync(file);
+                return await Deno.readFile(file);
             }
 
             // Handling 304 status with negotiation cache
@@ -159,7 +159,7 @@ export class Server {
             } else {
                 ctx.set("Last-Modified", lastModified);
                 ctx.set("Cache-Control", "max-age=" + this.#maxAge);
-                return Deno.readFileSync(file);
+                return await Deno.readFile(file);
             }
         } catch (e) {
             if (e instanceof Deno.errors.NotFound) {
