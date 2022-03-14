@@ -28,13 +28,13 @@ export class Metadata {
         console.log("resolve(./)=", resolve("./"))
         console.log("Deno.cwd()=", Deno.cwd())
 
-        for await (const entry of walk(resolve())) {
-            if (entry.isFile && (entry.name.endsWith('.ts') || entry.name.endsWith('.tsx'))) {
-                await import(entry.path);
-            }
-        }
-        // Then parse all the decorators
-        this.#compose();
+        // for await (const entry of walk(resolve())) {
+        //     if (entry.isFile && (entry.name.endsWith('.ts') || entry.name.endsWith('.tsx'))) {
+        //         await import(entry.path);
+        //     }
+        // }
+        // // Then parse all the decorators
+        // this.#compose();
     }
 
     /**
