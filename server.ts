@@ -105,7 +105,7 @@ export class Server {
                 } else if (body !== undefined && body !== null) {
                     const node = body as Node; // JSX Node
                     if (typeof node.tag === "function") {
-                        body = renderJsx(node);
+                        body = "<!doctype html>" + renderJsx(node);
                     }
                 }
             } else {
