@@ -23,15 +23,14 @@ export class Metadata {
      * to trigger the decorators
      */
     static async loadClasses(): Promise<void> {
-        for await (const entry of walk(resolve())) {
-            console.log("entry.path=", entry.path)
-
+        const baseDir = resolve();
+        for await (const entry of walk(baseDir)) {
             if (entry.isFile && (entry.name.endsWith('.ts') || entry.name.endsWith('.tsx'))) {
-                // await import(entry.path);
+                await import(entry.path.replace(baseDir, "."));
             }
         }
-        // // Then parse all the decorators
-        // this.#compose();
+        // Then parse all the decorators
+        this.#compose();
     }
 
     /**
