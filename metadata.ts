@@ -1,4 +1,4 @@
-import { Reflect, join, walk } from "./deps.ts";
+import { Reflect, join, resolve, walk } from "./deps.ts";
 import { Decorator, Middleware, Route, Callback, HttpError } from "./defs.ts";
 import { BaseEngine } from "./base_engine.ts";
 
@@ -24,6 +24,8 @@ export class Metadata {
      */
     static async loadClasses(appBase: string): Promise<void> {
         try {
+            console.log("appBase=", appBase)
+            console.log("resolve appBase=", resolve(appBase))
             const stat = await Deno.stat(appBase);
             if (stat.isFile) {
                 console.error("\x1b[31m[Cross] Error: App base must be a directory", "\x1b[0m");
@@ -32,7 +34,8 @@ export class Metadata {
 
             for await (const entry of walk(appBase)) {
                 if (entry.isFile && (entry.name.endsWith('.ts') || entry.name.endsWith('.tsx'))) {
-                    await import(entry.path);
+                    console.log("resolve(entry.path)=", resolve(entry.path))
+                    await import(resolve(entry.path));
                 }
             }
 
