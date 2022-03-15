@@ -11,27 +11,51 @@ import { Metadata } from "./metadata.ts";
  */
 export class Server {
 
+    #maxAge: number = 3600 * 24 * 7; // Cache-Control default 7days
+
     #router = new Router();
     #baseEngine = new BaseEngine();
-    #maxAge: number = 3600 * 24 * 7; // Cache-Control 7days
 
     /**
      * Create an instance
-     * Which routes are loaded depends on whether there are arguments
      * @param routes Route[]
      * @returns
      */
     constructor(...routes: Route[]) {
+        // Run SHORTCUT MODE if arguments exist
+        // No need to scan to load decorator classes
         if (routes.length > 0) {
-            // Run SHORTCUT MODE if arguments exist
-            // No need to scan to load decorator classes
-            this.#loadRoutes(routes);
-        } else {
-            // Run DECORATOR MODE if arguments not exist
-            Metadata.loadClasses().then(() => {
-                this.#loadRoutes(Metadata.routes);
-            });
+            this.#addRoutes(routes);
         }
+    }
+
+    /**
+     * Run DECORATOR MODE if base dir is set
+     * @param dir absolute app base
+     */
+    base(dir: string) {
+        Metadata.loadClasses(dir).then(() => {
+            this.#addRoutes(Metadata.routes);
+        });
+        return this;
+    }
+
+    /**
+     * Set static resource directory path
+     * All files under this path are directly accessible
+     * @param dir
+     * @param maxAge in seconds
+     */
+    static(dir: string, maxAge?: number) {
+        this.#addRoutes([{
+            method: Method.GET,
+            path: join('/', dir, '*'),
+            callback: this.#handleStatic.bind(this)
+        }])
+        if (maxAge) {
+            this.#maxAge = maxAge;
+        }
+        return this;
     }
 
     /**
@@ -41,29 +65,9 @@ export class Server {
     listen(port?: number) {
         port = port || 3000;
         serve((request: Request) => this.#handleRequest(request), { port });
-
         console.log(`\x1b[90m[Cross] ${this.#version()}\x1b[0m`);
         console.log(`\x1b[90m[Cross] Reference: https://deno.land/x/cross\x1b[0m`);
         console.log(`[Cross] Server is running at \x1b[4m\x1b[36mhttp://localhost:${port}\x1b[0m`);
-    }
-
-    /**
-     * Set static resource directory path
-     * All files under this path are directly accessible
-     * @param dir
-     * @param maxAge in seconds
-     */
-    assets(dir: string, maxAge?: number) {
-        // Add static route
-        this.#router.add({
-            method: Method.GET,
-            path: join('/', dir, '*'),
-            callback: this.#handleAssets.bind(this)
-        });
-        if (maxAge) {
-            this.#maxAge = maxAge;
-        }
-        return this;
     }
 
     /**
@@ -133,7 +137,7 @@ export class Server {
      * @param ctx
      * @returns
      */
-    async #handleAssets(ctx: Context) {
+    async #handleStatic(ctx: Context) {
         // Removes the leading slash and converts relative path to absolute path
         const file = resolve(ctx.path.replace(/^\/+/, ''));
         try {
@@ -181,11 +185,10 @@ export class Server {
     }
 
     /**
-     * Initialize the router
+     * Add routes to router
      * @param routes Route[]
      */
-    #loadRoutes(routes: Route[]) {
-        // Add dynamic routes
+    #addRoutes(routes: Route[]) {
         routes.forEach(route => this.#router.add(route));
     }
 

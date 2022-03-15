@@ -1,4 +1,4 @@
-import { Reflect, join, resolve, walk } from "./deps.ts";
+import { Reflect, join, walk } from "./deps.ts";
 import { Decorator, Middleware, Route, Callback, HttpError } from "./defs.ts";
 import { BaseEngine } from "./base_engine.ts";
 
@@ -7,10 +7,6 @@ import { BaseEngine } from "./base_engine.ts";
  */
 export class Metadata {
 
-    // To avoid creating instance repeatedly, use "Set" to automatically deduplicate.
-    // deno-lint-ignore no-explicit-any
-    static #constructors: Set<any> = new Set();
-
     // All the global metadata at runtime
     static engine?: BaseEngine;
     static plugins: Record<string, unknown> = {};
@@ -18,19 +14,36 @@ export class Metadata {
     static routes: Route[] = [];
     static errorHandler?: Callback;
 
+    // To avoid creating instance repeatedly, use "Set" to automatically deduplicate.
+    // deno-lint-ignore no-explicit-any
+    static #constructors: Set<any> = new Set();
+
     /**
      * Loads (imports) all .ts files under the current project
      * to trigger the decorators
      */
-    static async loadClasses(): Promise<void> {
-        const baseDir = resolve();
-        for await (const entry of walk(baseDir)) {
-            if (entry.isFile && (entry.name.endsWith('.ts') || entry.name.endsWith('.tsx'))) {
-                await import(entry.path.replace(baseDir, "."));
+    static async loadClasses(appBase: string): Promise<void> {
+        try {
+            const stat = await Deno.stat(appBase);
+            if (stat.isFile) {
+                console.error("\x1b[31m[Cross] Error: App base must be a directory", "\x1b[0m");
+                return;
             }
+
+            for await (const entry of walk(appBase)) {
+                if (entry.isFile && (entry.name.endsWith('.ts') || entry.name.endsWith('.tsx'))) {
+                    await import(entry.path);
+                }
+            }
+
+            // Then parse all the decorators
+            this.#compose();
+            if (this.routes.length === 0) {
+                console.warn("\x1b[33m[Cross] Warn: No route found in app base", "\x1b[0m");
+            }
+        } catch (e) {
+            console.error("\x1b[33m[Cross] Error:", e.message, "\x1b[0m");
         }
-        // Then parse all the decorators
-        this.#compose();
     }
 
     /**
