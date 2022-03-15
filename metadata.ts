@@ -24,6 +24,10 @@ export class Metadata {
      */
     static async loadClasses(appBase: string): Promise<void> {
         try {
+            console.log("1========", resolve("./template"))
+            console.log("2========", resolve("/template"))
+            console.log("3========", resolve("template"))
+
             console.log("appBase=", appBase)
             console.log("resolve appBase=", resolve(appBase))
             const stat = await Deno.stat(appBase);
