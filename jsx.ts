@@ -32,6 +32,10 @@ export const h = (
   return { tag, props: { ...props, children } };
 }
 
+export const Fragment = ({ children }: Children) => {
+  return children;
+}
+
 export const renderJsx = (jsx: Node) => {
   if (typeof jsx.tag === "function") {
     return renderToString(jsx.tag(jsx.props));
