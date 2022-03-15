@@ -29,14 +29,15 @@ ways.
 
 ### Decorator mode
 
-If no route is set in the startup arguments, the framework will automatically
-switch to decorator mode. The only difference in performance between the
-shortcut mode and the decorator mode is that the latter needs to scan and load
-all decorators at startup, it is almost the same in runtime.
+Importing a ts/tsx file containing any decorators to use its features. Shortcut
+mode and decorator mode do not conflict and can be used together. The only
+difference in performance between the two is that the latter needs to parse all
+decorators at startup, it is almost the same in runtime.
 
 ```ts
 // index.ts
 import { Cross } from "https://deno.land/x/cross/mod.ts";
+import "./controllers/MyController.ts"; // Don't forget to import
 
 new Cross().listen();
 ```
@@ -197,10 +198,10 @@ export class AnyClass {
 
 ### Constructor
 
-To start the web service, you simply new an instance with `new Cross()`. The
-instance has two public methods as follow:
+To start the web service, you simply new an instance with
+`new Cross(...routes:Route[])`. The instance has two public methods as follow:
 
-- `assets(dir[, maxAge])` "dir" is the relative path of static resources
+- `static(dir[, maxAge])` "dir" is the relative path of static resources
   directory. The "maxAge" directive states the maximum amount of time in seconds
   that fetched responses are allowed to be used again.
 - `listen(port)` HTTP server listening port, default 3000.
@@ -277,8 +278,9 @@ contains properties and methods related to requests and responses.
 
 #### Others
 
-- `ctx.view(tmplPath, data)`
-- `ctx.render(tmplText, data)`
+- `ctx.view(tmplPath, data)` You can return string directly,which will be
+  rendered by the @Template decorator.
+- `ctx.render(tmplText, data)` Usually not needed
 - `ctx.renderJsx(node)` You can return node directly, which will be rendered by
   the framework.
 - `ctx.error`

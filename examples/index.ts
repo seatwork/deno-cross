@@ -1,11 +1,15 @@
 import { Cross, get } from "../mod.ts";
-import { resolve } from "https://deno.land/std@0.129.0/path/mod.ts";
+import "./controllers/SimpleController.ts";
+import "./controllers/MixedController.ts";
+import "./controllers/TsxController.tsx";
+import "./plugins/BirdPlugin.ts";
+import "./plugins/FakeMiddleware.ts";
+import "./plugins/TinyEngine.ts";
 
 new Cross(
-  // get("/abc", () => {
-  //   return "shortcut abc";
-  // })
+  get("/abc", () => {
+    return "abc in shortcut mode";
+  })
 )
-  .base(resolve())
-  .static("/assets")
+  .static("/assets", 3600 * 24)
   .listen();

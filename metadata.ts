@@ -1,4 +1,4 @@
-import { Reflect, join, resolve, walk } from "./deps.ts";
+import { Reflect, join } from "./deps.ts";
 import { Decorator, Middleware, Route, Callback, HttpError } from "./defs.ts";
 import { BaseEngine } from "./base_engine.ts";
 
@@ -17,41 +17,6 @@ export class Metadata {
     // To avoid creating instance repeatedly, use "Set" to automatically deduplicate.
     // deno-lint-ignore no-explicit-any
     static #constructors: Set<any> = new Set();
-
-    /**
-     * Loads (imports) all .ts files under the current project
-     * to trigger the decorators
-     */
-    static async loadClasses(appBase: string): Promise<void> {
-        try {
-            console.log("1========", resolve("./template"))
-            console.log("2========", resolve("/template"))
-            console.log("3========", resolve("template"))
-
-            console.log("appBase=", appBase)
-            console.log("resolve appBase=", resolve(appBase))
-            const stat = await Deno.stat(appBase);
-            if (stat.isFile) {
-                console.error("\x1b[31m[Cross] Error: App base must be a directory", "\x1b[0m");
-                return;
-            }
-
-            for await (const entry of walk(appBase)) {
-                if (entry.isFile && (entry.name.endsWith('.ts') || entry.name.endsWith('.tsx'))) {
-                    console.log("resolve(entry.path)=", resolve(entry.path))
-                    await import(resolve(entry.path));
-                }
-            }
-
-            // Then parse all the decorators
-            this.#compose();
-            if (this.routes.length === 0) {
-                console.warn("\x1b[33m[Cross] Warn: No route found in app base", "\x1b[0m");
-            }
-        } catch (e) {
-            console.error("\x1b[33m[Cross] Error:", e.message, "\x1b[0m");
-        }
-    }
 
     /**
      * Append metadata to target constructor (called when the decorator is triggered)
@@ -84,7 +49,7 @@ export class Metadata {
     /**
      * Resolve all decorators
      */
-    static #compose() {
+    static compose() {
         // Get metadata from each constructor
         for (const c of this.#constructors) {
             // New an instance

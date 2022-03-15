@@ -30,20 +30,9 @@ export class Server {
     }
 
     /**
-     * Run DECORATOR MODE if base dir is set
-     * @param dir absolute app base
-     */
-    base(dir: string) {
-        Metadata.loadClasses(dir).then(() => {
-            this.#addRoutes(Metadata.routes);
-        });
-        return this;
-    }
-
-    /**
-     * Set static resource directory path
+     * Add static resource route to router
      * All files under this path are directly accessible
-     * @param dir
+     * @param dir relative path
      * @param maxAge in seconds
      */
     static(dir: string, maxAge?: number) {
@@ -63,6 +52,15 @@ export class Server {
      * @param port default 3000
      */
     listen(port?: number) {
+        Metadata.compose();
+        this.#addRoutes(Metadata.routes);
+
+        if (this.#router.routes.length === 0) {
+            console.error(`\x1b[31m[Cross] Error: No route found\x1b[0m`);
+            console.log(`[Cross] Please make sure you have imported the decorator module`);
+            return;
+        }
+
         port = port || 3000;
         serve((request: Request) => this.#handleRequest(request), { port });
         console.log(`\x1b[90m[Cross] ${this.#version()}\x1b[0m`);

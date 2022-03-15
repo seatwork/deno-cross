@@ -15,6 +15,7 @@ export class Router {
     // Since the route has other properties (such as template),
     // it is necessary to cache all routes for finding later
     #routes: Route[] = [];
+    get routes() { return this.#routes; }
 
     /**
      * Add a route
