@@ -11,8 +11,6 @@ import { Metadata } from "./metadata.ts";
  */
 export class Server {
 
-    #maxAge: number = 3600 * 24 * 7; // Cache-Control default 7days
-
     #router = new Router();
     #baseEngine = new BaseEngine();
 
@@ -33,17 +31,13 @@ export class Server {
      * Add static resource route to router
      * All files under this path are directly accessible
      * @param dir relative path
-     * @param maxAge in seconds
      */
-    static(dir: string, maxAge?: number) {
+    static(dir: string) {
         this.#addRoutes([{
             method: Method.GET,
             path: join('/', dir, '*'),
             callback: this.#handleStatic.bind(this)
         }])
-        if (maxAge) {
-            this.#maxAge = maxAge;
-        }
         return this;
     }
 
@@ -73,6 +67,8 @@ export class Server {
      * Used to undertake requests for third-party http services
      */
     get dispatch() {
+        Metadata.compose();
+        this.#addRoutes(Metadata.routes);
         return this.#handleRequest.bind(this);
     }
 
@@ -153,14 +149,12 @@ export class Server {
 
             // Handling 304 status with negotiation cache
             // if-modified-since and Last-Modified
-            // In the new standard, replace "expires" in Cache-Control with "max-age"
             const lastModified = stat.mtime.toUTCString();
             if (ctx.headers.get("if-modified-since") == lastModified) {
                 ctx.status = 304;
                 ctx.statusText = "Not Modified";
             } else {
                 ctx.set("Last-Modified", lastModified);
-                ctx.set("Cache-Control", "max-age=" + this.#maxAge);
                 return await Deno.readFile(file);
             }
         } catch (e) {

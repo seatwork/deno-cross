@@ -201,9 +201,8 @@ export class AnyClass {
 To start the web service, you simply new an instance with
 `new Cross(...routes:Route[])`. The instance has two public methods as follow:
 
-- `static(dir[, maxAge])` "dir" is the relative path of static resources
-  directory. The "maxAge" directive states the maximum amount of time in seconds
-  that fetched responses are allowed to be used again.
+- `static(dir)` "dir" is the relative path of static resources directory. that
+  fetched responses are allowed to be used again.
 - `listen(port)` HTTP server listening port, default 3000.
 
 ### Shortcuts
