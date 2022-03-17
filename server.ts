@@ -189,8 +189,9 @@ export class Server {
    * @returns
    */
   #version() {
+    console.log("----------Deno.version---", Deno.version)
     const vers = JSON.stringify(Deno.version);
-    return vers.replace(/(\"|{|})/g, "").replace(/(:|,)/g, "$1 ");
+    return vers ? vers.replace(/(\"|{|})/g, "").replace(/(:|,)/g, "$1 ") : "";
   }
 
 }
