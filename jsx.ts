@@ -90,7 +90,7 @@ export const renderJsx = (jsx: Node) => {
 }
 
 const renderToString = (nodes: NodeSet): string => {
-  if (!nodes) {
+  if (nodes === undefined || nodes === null) { // not ZERO
     return "";
   }
   if (typeof nodes !== "object") {
