@@ -62,7 +62,7 @@ export class Router {
  * @author https://github.com/zhmushan/router
  * @import https://deno.land/x/router@v2.0.1/mod.ts
  */
-export class Radix {
+class Radix {
 
   path = "";
   children = new Map<string, Radix>();

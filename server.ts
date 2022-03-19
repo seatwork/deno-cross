@@ -35,7 +35,7 @@ export class Server {
   static(dir: string) {
     this.#addRoutes([{
       method: Method.GET,
-      path: join('/', dir, '*'),
+      path: join("/", dir, "*"),
       callback: this.#handleStatic.bind(this)
     }])
     return this;
@@ -133,7 +133,7 @@ export class Server {
    */
   async #handleStatic(ctx: Context) {
     // Removes the leading slash and converts relative path to absolute path
-    const file = resolve(ctx.path.replace(/^\/+/, ''));
+    const file = resolve(ctx.path.replace(/^\/+/, ""));
     try {
       const stat = await Deno.stat(file);
       if (stat.isDirectory) {
@@ -141,7 +141,7 @@ export class Server {
       }
       const mime = Mime[extname(file)];
       if (mime) {
-        ctx.set('Content-Type', mime);
+        ctx.set("Content-Type", mime);
       }
       if (!stat.mtime) {
         return await Deno.readFile(file);

@@ -2,7 +2,8 @@ import { getCookies, setCookie, deleteCookie } from "./deps.ts";
 import { CookieOptions, HttpError } from "./defs.ts";
 
 /**
- * Application context (request and response)
+ * Application context
+ * extends request and response
  */
 export class Context {
 

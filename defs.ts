@@ -33,24 +33,54 @@ export const enum HttpStatus {
 
 // Common mimetypes
 export const Mime: Record<string, string> = {
-  ".htm": "text/html;charset:utf-8",
-  ".html": "text/html;charset:utf-8",
-  ".xml": "text/xml;charset:utf-8",
-  ".css": "text/css;charset:utf-8",
-  ".txt": "text/plain;charset:utf-8",
+  ".htm": "text/html; charset=utf-8",
+  ".html": "text/html; charset=utf-8",
+  ".xml": "text/xml; charset=utf-8",
+  ".css": "text/css; charset=utf-8",
+  ".txt": "text/plain; charset=utf-8",
+  ".log": "text/plain; charset=utf-8",
+  ".ini": "text/plain; charset=utf-8",
+  ".md": "text/markdown; charset=utf-8",
+  ".yaml": "text/yaml; charset=utf-8",
+  ".yml": "text/yaml; charset=utf-8",
+  ".conf": "text/plain; charset=utf-8",
+  ".json": "application/json; charset=utf-8",
+  ".js": "application/javascript; charset=utf-8",
+  ".jsx": "text/jsx; charset=utf-8",
+  ".ts": "text/typescript; charset=utf-8",
+  ".tsx": "text/tsx; charset=utf-8",
+  ".mjs": "application/javascript; charset=utf-8",
   ".png": "image/png",
   ".jpg": "image/jpeg",
   ".jpeg": "image/jpeg",
   ".gif": "image/gif",
+  ".webp": "image/webp",
   ".svg": "image/svg+xml",
   ".ico": "image/x-icon",
   ".tif": "image/tiff",
-  ".mp3": "audio/mpeg",
+  ".heic": "image/heic",
+  ".heif": "image/heif",
+  ".mid": "audio/midi",
+  ".midi": "audio/midi",
+  ".mp3": "audio/mp3",
+  ".mp4a": "audio/mp4",
+  ".m4a": "audio/mp4",
+  ".ogg": "audio/ogg",
+  ".wav": "audio/wav",
+  ".webm": "audio/webm",
+  ".aac": "audio/x-aac",
+  ".flac": "audio/x-flac",
   ".mp4": "video/mp4",
+  ".mp4v": "video/mp4",
+  ".mkv": "video/x-matroska",
+  ".mov": "video/quicktime",
+  ".otf": "font/otf",
   ".ttf": "font/ttf",
   ".woff": "font/woff",
   ".woff2": "font/woff2",
-  ".json": "application/json",
+  ".jar": "application/java-archive",
+  ".war": "application/java-archive",
+  ".gz": "application/gzip",
   ".zip": "application/zip",
 }
 
@@ -68,7 +98,7 @@ export type Decorator = {
 // Route type
 export type Route = {
   method: string;
-  path: string,
+  path: string;
   callback: Callback;
   template?: string;
   params?: Record<string, string>;

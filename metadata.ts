@@ -126,7 +126,7 @@ export class Metadata {
 
         this.routes.push({
           method: decorator.name,
-          path: join('/', prefix, path),
+          path: join("/", prefix, path),
           callback, template
         });
       }

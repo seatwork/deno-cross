@@ -15,7 +15,7 @@ export class BaseEngine {
    */
   // deno-lint-ignore no-explicit-any
   async view(path: string, data: any = {}) {
-    path = path.replace(/^\/+/, '');
+    path = path.replace(/^\/+/, "");
     let fn = this.#fnCache[path];
 
     if (!fn) {

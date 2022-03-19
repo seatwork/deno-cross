@@ -61,7 +61,7 @@ export const renderJsx = (jsx: Node) => {
   if (jsx.props.dangerouslySetInnerHTML != null) {
     innerHTML = jsx.props.dangerouslySetInnerHTML?.__html ?? "";
   } else {
-    innerHTML = jsx.tag === 'script' ? children : renderToString(children);
+    innerHTML = jsx.tag === "script" ? children : renderToString(children);
   }
 
   // Render HTML tag
@@ -103,7 +103,7 @@ const renderToString = (nodes: NodeSet): string => {
 }
 
 const renderCss = (props: string | [string, Litaral]) => {
-  if (typeof props === 'string') return props;
+  if (typeof props === "string") return props;
   return Object.entries(props).map(([prop, value]) => (
     `${toKebabCase(prop)}: ${value}`
   )).join("; ");

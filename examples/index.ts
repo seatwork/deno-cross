@@ -11,5 +11,5 @@ new Cross(
     return "abc in shortcut mode";
   })
 )
-  .static("/assets", 3600 * 24)
+  .static("/assets")
   .listen();
