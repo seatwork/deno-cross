@@ -1,5 +1,5 @@
 import { serve, join, resolve, extname } from "./deps.ts";
-import { Route, Method, Mime, HttpStatus } from "./defs.ts";
+import { Route, Method, Mime, HttpStatus, Callback } from "./defs.ts";
 import { Context } from "./context.ts";
 import { Router } from "./router.ts";
 import { BaseEngine } from "./engine.ts";
@@ -8,68 +8,66 @@ import { Metadata } from "./metadata.ts";
 
 /**
  * HTTP Server
+ * for handling requests and static resources
  */
 export class Server {
 
   #router = new Router();
   #baseEngine = new BaseEngine();
 
-  /**
-   * Create an instance
-   * @param routes Route[]
-   * @returns
-   */
-  constructor(...routes: Route[]) {
-    // Run SHORTCUT MODE if arguments exist
-    // No need to scan to load decorator classes
-    if (routes.length > 0) {
-      this.#addRoutes(routes);
-    }
+  // Create routes with shortcuts
+  all(path: string, callback: Callback) {
+    return this.#shortcut(Method.ALL)(path, callback);
+  }
+  get(path: string, callback: Callback) {
+    return this.#shortcut(Method.GET)(path, callback);
+  }
+  post(path: string, callback: Callback) {
+    return this.#shortcut(Method.POST)(path, callback);
+  }
+  put(path: string, callback: Callback) {
+    return this.#shortcut(Method.PUT)(path, callback);
+  }
+  delete(path: string, callback: Callback) {
+    return this.#shortcut(Method.DELETE)(path, callback);
+  }
+  patch(path: string, callback: Callback) {
+    return this.#shortcut(Method.PATCH)(path, callback);
+  }
+  head(path: string, callback: Callback) {
+    return this.#shortcut(Method.HEAD)(path, callback);
+  }
+  options(path: string, callback: Callback) {
+    return this.#shortcut(Method.OPTIONS)(path, callback);
   }
 
-  /**
-   * Add static resource route to router
-   * All files under this path are directly accessible
-   * @param dir relative path
-   */
-  static(dir: string) {
-    this.#addRoutes([{
-      method: Method.GET,
-      path: join("/", dir, "*"),
+  // Create static resource route
+  serve(path: string) {
+    this.#router.add({
+      method: Method.GET, path,
       callback: this.#handleStatic.bind(this)
-    }])
+    });
     return this;
   }
 
   /**
-   * Start HTTP server
+   * Create HTTP server
    * @param port default 3000
    */
   listen(port?: number) {
-    Metadata.compose();
-    this.#addRoutes(Metadata.routes);
+    this.#compose();
 
     if (this.#router.routes.length === 0) {
       console.error(`\x1b[31m[Cross] Error: No route found\x1b[0m`);
       console.log(`[Cross] Please make sure you have imported the decorator module`);
-      return;
+    } else {
+      port = port || 3000;
+      serve((request: Request) => this.#handleRequest(request), { port });
+      console.log(`\x1b[90m[Cross] ${this.#version()}\x1b[0m`);
+      console.log(`\x1b[90m[Cross] Reference: https://deno.land/x/cross\x1b[0m`);
+      console.log(`[Cross] Server is running at \x1b[4m\x1b[36mhttp://localhost:${port}\x1b[0m`);
     }
-
-    port = port || 3000;
-    serve((request: Request) => this.#handleRequest(request), { port });
-    console.log(`\x1b[90m[Cross] ${this.#version()}\x1b[0m`);
-    console.log(`\x1b[90m[Cross] Reference: https://deno.land/x/cross\x1b[0m`);
-    console.log(`[Cross] Server is running at \x1b[4m\x1b[36mhttp://localhost:${port}\x1b[0m`);
-  }
-
-  /**
-   * Exports the core method for handling requests
-   * Used to undertake requests for third-party http services
-   */
-  get dispatch() {
-    Metadata.compose();
-    this.#addRoutes(Metadata.routes);
-    return this.#handleRequest.bind(this);
+    return this;
   }
 
   /**
@@ -150,7 +148,7 @@ export class Server {
       // Handling 304 status with negotiation cache
       // if-modified-since and Last-Modified
       const lastModified = stat.mtime.toUTCString();
-      if (ctx.headers.get("if-modified-since") == lastModified) {
+      if (ctx.headers.get("if-modified-since") === lastModified) {
         ctx.status = 304;
         ctx.statusText = "Not Modified";
       } else {
@@ -167,27 +165,36 @@ export class Server {
   }
 
   /**
-   * Call middlewares by priority
-   * @param ctx
+   * Exports the core method for handling requests
+   * Used to undertake requests for third-party http services
    */
+  get dispatch() {
+    this.#compose();
+    return this.#handleRequest.bind(this);
+  }
+
+  // Create shortcut methods
+  #shortcut(method: string) {
+    return (path: string, callback: Callback) => {
+      this.#router.add({ method, path, callback });
+      return this;
+    }
+  }
+
+  // Call middlewares by priority
   async #callMiddlewares(ctx: Context) {
     for (const middleware of Metadata.middlewares) {
       await middleware.callback(ctx);
     }
   }
 
-  /**
-   * Add routes to router
-   * @param routes Route[]
-   */
-  #addRoutes(routes: Route[]) {
-    routes.forEach(route => this.#router.add(route));
+  // Compose routes from metadata
+  #compose() {
+    Metadata.compose();
+    Metadata.routes.forEach(route => this.#router.add(route));
   }
 
-  /**
-   * Format versions
-   * @returns
-   */
+  // Format versions
   #version() {
     const vers = JSON.stringify(Deno.version);
     return vers

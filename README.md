@@ -11,16 +11,17 @@ import { Cross } from "https://deno.land/x/cross/mod.ts";
 ### Shortcut mode
 
 ```ts
-import { Cross, get, post } from "https://deno.land/x/cross/mod.ts";
+import { Cross } from "https://deno.land/x/cross/mod.ts";
 
-new Cross(
-  get("/:user", (ctx) => {
+new Cross()
+  .serve("/assets/*")
+  .get("/:user", (ctx) => {
     return ctx.params;
-  }),
-  post("/:user", (ctx) => {
+  })
+  .post("/:user", (ctx) => {
     return ctx.params;
-  }),
-).listen();
+  })
+  .listen();
 ```
 
 Note that features such as plugins, middlewares,template engine and unified
@@ -201,7 +202,7 @@ export class AnyClass {
 To start the web service, you simply new an instance with
 `new Cross(...routes:Route[])`. The instance has two public methods as follow:
 
-- `static(dir)` "dir" is the relative path of static resources directory. that
+- `serve(dir)` "dir" is the relative path of static resources directory. that
   fetched responses are allowed to be used again.
 - `listen(port)` HTTP server listening port, default 3000.
 
@@ -290,7 +291,3 @@ contains properties and methods related to requests and responses.
 - `BodyInit`: Blob, BufferSource, FormData, ReadableStream, URLSearchParams, or
   USVString
 - `Response`: Native response instance.
-
-## Examples
-
-See https://github.com/seatwork/deno-cross/tree/master/examples
