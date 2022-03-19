@@ -1,5 +1,5 @@
-import { serve, join, resolve, extname } from "./deps.ts";
-import { Route, Method, Mime, HttpStatus, Callback } from "./defs.ts";
+import { serve, resolve, extname } from "./deps.ts";
+import { Method, Mime, HttpStatus, Callback } from "./defs.ts";
 import { Context } from "./context.ts";
 import { Router } from "./router.ts";
 import { BaseEngine } from "./engine.ts";

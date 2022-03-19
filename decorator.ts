@@ -1,4 +1,4 @@
-import { Method, Callback } from "./defs.ts";
+import { Method } from "./defs.ts";
 import { Metadata } from "./metadata.ts";
 
 /**
