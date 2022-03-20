@@ -162,16 +162,20 @@ export class Context {
 
   // Build the response object
   // BodyInit: Blob, BufferSource, FormData, ReadableStream, URLSearchParams, or USVString
-  build(body: BodyInit | Response) {
+  build(body: BodyInit | Response | undefined | null) {
+    if (body === undefined || body === null ||
+      this.status === 204 || this.status === 304) {
+      return new Response(null, this.#response);
+    }
+
+    // it's a complete native response
     if (body instanceof Response) {
-      return body; // it's a complete native response
+      return body.status === 204 || body.status === 304
+        ? new Response(null, body) : body;
     }
 
     let contentType = null;
-    if (body === undefined || body === null) {
-      if (!this.status) this.status = 204;
-
-    } else if (typeof body === "string") {
+    if (typeof body === "string") {
       contentType = /^\s*</.test(body) ? "text/html" : "text/plain";
 
     } else if (!(body instanceof Blob) && !(body instanceof Uint8Array)

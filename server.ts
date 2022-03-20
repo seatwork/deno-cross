@@ -101,7 +101,7 @@ export class Server {
         } else if (body !== undefined && body !== null) {
           const node = body as Node; // JSX Node
           if (node.tag !== undefined && node.tag !== null) {
-            body = "<!doctype html>" + renderJsx(node);
+            body = "<!DOCTYPE html>" + renderJsx(node);
           }
         }
       } else {
